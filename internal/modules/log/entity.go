@@ -1,0 +1,21 @@
+package log
+
+type Level string
+
+const (
+	LevelDebug Level = "DEBUG"
+	LevelInfo  Level = "INFO"
+	LevelWarn  Level = "WARN"
+	LevelError Level = "ERROR"
+)
+
+type Log struct {
+	ID        string `db:"id"`
+	ProjectID int64  `db:"project_id"`
+	Level     Level  `db:"level"`
+	Message   string `db:"message"`
+	Context   string `db:"context"`
+	Time      int64  `db:"time"`
+	CreatedAt int64  `db:"created_at"`
+	UpdatedAt int64  `db:"updated_at"`
+}

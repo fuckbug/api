@@ -1,0 +1,17 @@
+services:
+  fuckbug-api:
+    container_name: fuckbug-api
+    build:
+      context: ../..
+      dockerfile: ./build/fuckbug/Dockerfile
+    volumes:
+      - ../../var/configs/fuckbug:/configs/fuckbug
+    command: sh -c "./opt/app/bin --config configs/fuckbug/config.json"
+    ports:
+      - "80:80"
+    networks:
+      - fuckbug_network
+
+networks:
+  fuckbug_network:
+    driver: bridge

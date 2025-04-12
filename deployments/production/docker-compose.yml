@@ -1,0 +1,22 @@
+services:
+  fuckbug-api:
+    container_name: fuckbug-api
+    image: fuckbugio/api:1.0.0
+    restart: always
+    volumes:
+      - ./docker/configs/fuckbug:/configs/fuckbug
+    command: sh -c "./opt/app/bin --config configs/fuckbug/config.json"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.http.routers.fuckbug-api.rule=Host(`api.fuckbug.io`)
+      - traefik.http.routers.fuckbug-api.middlewares=secure-headers
+      - traefik.http.routers.fuckbug-api.entryPoints=https
+      - traefik.http.routers.fuckbug-api.tls=true
+      - traefik.http.routers.fuckbug-api.tls.certResolver=letsEncrypt
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
