@@ -5,6 +5,7 @@ import (
 
 	"github.com/fuckbug/api/internal/modules/app"
 	"github.com/fuckbug/api/internal/modules/log"
+	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -14,6 +15,7 @@ func NewHandler(
 	logger handlers.Logger,
 	appService app.Service,
 	logService log.Service,
+	projectService project.Service,
 ) http.Handler {
 	r := mux.NewRouter()
 	r.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
@@ -23,6 +25,7 @@ func NewHandler(
 
 	handlers.RegisterAppHandlers(r, logger, appService)
 	handlers.RegisterLogHandlers(r, logger, logService)
+	handlers.RegisterProjectHandlers(r, logger, projectService)
 
 	return r
 }

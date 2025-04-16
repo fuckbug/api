@@ -9,6 +9,7 @@ import (
 
 	"github.com/fuckbug/api/internal/modules/app"
 	"github.com/fuckbug/api/internal/modules/log"
+	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
 )
 
@@ -26,12 +27,20 @@ func New(
 	logger handlers.Logger,
 	appService app.Service,
 	logService log.Service,
+	projectService project.Service,
 	host string,
 	port int,
 ) *Server {
+	handler := NewHandler(
+		logger,
+		appService,
+		logService,
+		projectService,
+	)
+
 	servers := &http.Server{
 		Addr:         net.JoinHostPort(host, strconv.Itoa(port)),
-		Handler:      loggingMiddleware(logger, NewHandler(logger, appService, logService)),
+		Handler:      loggingMiddleware(logger, handler),
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
 	}

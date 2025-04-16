@@ -18,6 +18,7 @@ import (
 
 	"github.com/fuckbug/api/internal/logger"
 	moduleLog "github.com/fuckbug/api/internal/modules/log"
+	moduleProject "github.com/fuckbug/api/internal/modules/project"
 	server "github.com/fuckbug/api/internal/server/http"
 )
 
@@ -70,11 +71,13 @@ func main() {
 
 	appService := app.New(appLogger)
 	logService := moduleLog.NewService(moduleLog.NewRepository(db, appLogger), appLogger)
+	projectService := moduleProject.NewService(moduleProject.NewRepository(db, appLogger), appLogger)
 
 	s := server.New(
 		appLogger,
 		appService,
 		logService,
+		projectService,
 		"",
 		config.Port,
 	)

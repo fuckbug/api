@@ -24,6 +24,8 @@ dockerhub-build:
 dockerhub-push:
 	docker push fuckbugio/api:1.0.0
 
+dockerhub-deploy: dockerhub-build dockerhub-push
+
 docker-up:
 	docker compose -f ./deployments/development/docker-compose.yml up -d
 

@@ -1,4 +1,4 @@
-package response
+package httputils
 
 import (
 	"encoding/json"
@@ -9,8 +9,6 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// ListResponse represents a generic list response with count and items
-// swagger:model ListResponse
 type ListResponse[T any] struct {
 	// Total number of items
 	// example: 10
@@ -72,25 +70,4 @@ func HandleValidatorError(w http.ResponseWriter, err error) {
 		}
 		RespondWithError(w, http.StatusBadRequest, "Validation failed", details)
 	}
-}
-
-func DecodeRequest(w http.ResponseWriter, r *http.Request, v interface{}) error {
-	if r.Body == nil {
-		RespondWithError(w, http.StatusBadRequest, "Request body is required", nil)
-		return errors.New("empty request body")
-	}
-	defer r.Body.Close()
-
-	if r.Header.Get("Content-Type") != "application/json" {
-		RespondWithError(w, http.StatusUnsupportedMediaType, "Content-Type must be application/json", nil)
-		return errors.New("invalid content type")
-	}
-
-	// Декодирование JSON
-	if err := json.NewDecoder(r.Body).Decode(v); err != nil {
-		RespondWithError(w, http.StatusBadRequest, "Invalid JSON format", nil)
-		return err
-	}
-
-	return nil
 }
