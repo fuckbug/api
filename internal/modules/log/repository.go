@@ -173,7 +173,7 @@ func (r *repository) Delete(ctx context.Context, id string) error {
 func applyFilters(baseQuery string, params FilterParams, args map[string]interface{}) (string, map[string]interface{}) {
 	query := baseQuery
 
-	if params.ProjectID != 0 {
+	if params.ProjectID != "" {
 		query += " AND project_id = :projectId"
 		args["projectId"] = params.ProjectID
 	}

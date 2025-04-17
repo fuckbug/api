@@ -3,7 +3,7 @@ CREATE TYPE log_level AS ENUM ('INFO', 'WARN', 'ERROR', 'DEBUG');
 
 CREATE TABLE IF NOT EXISTS logs (
     id UUID PRIMARY KEY,
-    project_id BIGINT NOT NULL,
+    project_id UUID NOT NULL,
     level log_level NOT NULL,
     message TEXT NOT NULL,
     context TEXT,

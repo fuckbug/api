@@ -11,7 +11,7 @@ const (
 
 type Log struct {
 	ID        string `db:"id"`
-	ProjectID int64  `db:"project_id"`
+	ProjectID string `db:"project_id"`
 	Level     Level  `db:"level"`
 	Message   string `db:"message"`
 	Context   string `db:"context"`

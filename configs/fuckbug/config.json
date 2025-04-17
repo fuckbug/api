@@ -5,5 +5,6 @@
   "port": 80,
   "postgres": {
     "dsn": "host=localhost port=5432 user=USER password=PASSWORD dbname=NAME sslmode=disable"
-  }
+  },
+  "domain": "fuckbug.io"
 }

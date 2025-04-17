@@ -6,6 +6,7 @@ type Config struct {
 	Logger   loggerConf
 	Port     int
 	Postgres postgresConf
+	Domain   string
 }
 
 type loggerConf struct {

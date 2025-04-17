@@ -167,5 +167,5 @@ func generateRandomKey() string {
 	if err != nil {
 		return uuid.New().String()
 	}
-	return base64.URLEncoding.EncodeToString(b)
+	return base64.RawURLEncoding.EncodeToString(b)
 }

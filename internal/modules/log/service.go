@@ -62,7 +62,7 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 
 	log := &Log{
 		ID:        uuid.New().String(),
-		ProjectID: 1, // todo; from DSN
+		ProjectID: req.ProjectID,
 		Level:     Level(req.Level),
 		Message:   req.Message,
 		Context:   req.Context,

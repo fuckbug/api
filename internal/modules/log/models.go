@@ -8,7 +8,7 @@ type Logger interface {
 }
 
 type FilterParams struct {
-	ProjectID   int64
+	ProjectID   string
 	TimeFrom    int
 	TimeTo      int
 	LevelFilter string
@@ -23,10 +23,11 @@ type GetAllParams struct {
 }
 
 type Create struct {
-	Time    int64  `json:"time" validate:"required" example:"1704067200000" format:"int64"`
-	Level   string `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR"`
-	Message string `json:"message" validate:"required" example:"first log message"`
-	Context string `json:"context" example:"message context"`
+	Time      int64  `json:"time" validate:"required" example:"1704067200000" format:"int64"`
+	Level     string `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR"`
+	Message   string `json:"message" validate:"required" example:"first log message"`
+	Context   string `json:"context" example:"message context"`
+	ProjectID string
 }
 
 type Update struct {

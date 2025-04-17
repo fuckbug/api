@@ -28,15 +28,13 @@ func RegisterLogHandlers(
 		service:  service,
 	}
 
-	v1 := r.PathPrefix("/v1").Subrouter()
+	r.HandleFunc("/ingest/{projectID}:{key}/logs", h.Create).Methods(http.MethodPost)
 
-	router := v1.PathPrefix("/logs").Subrouter()
-
-	router.HandleFunc("", h.Create).Methods(http.MethodPost)
-	router.HandleFunc("", h.GetAll).Methods(http.MethodGet)
-	router.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
-	router.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
-	router.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
+	routerV1 := r.PathPrefix("/v1/logs").Subrouter()
+	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
+	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
+	routerV1.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
+	routerV1.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
 }
 
 // GetByID godoc
@@ -47,7 +45,7 @@ func RegisterLogHandlers(
 // @Produce json
 // @Success 200 {object} log.Entity
 // @Param id path string true "Log ID"
-// @Router /logs/{id} [get].
+// @Router /v1/logs/{id} [get].
 func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -71,7 +69,7 @@ func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Tags logs
 // @Accept  json
 // @Produce  json
-// @Param projectId query int false "Project ID"
+// @Param projectId query string false "Project ID"
 // @Param timeFrom query int false "Time logs from"
 // @Param timeTo query int false "Time logs to"
 // @Param level query string false "Filter by log level" Enums(DEBUG, INFO, WARN, ERROR)
@@ -80,7 +78,7 @@ func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} log.EntityList "Successfully retrieved list of logs"
-// @Router /logs [get].
+// @Router /v1/logs [get].
 func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 
@@ -94,10 +92,7 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		offset = httputils.DefaultOffset
 	}
 
-	projectID, err := strconv.ParseInt(queryParams.Get("projectId"), 10, 64)
-	if err != nil {
-		projectID = 0
-	}
+	projectID := queryParams.Get("projectId")
 
 	timeFrom, err := strconv.Atoi(queryParams.Get("timeFrom"))
 	if err != nil {
@@ -142,17 +137,26 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // Create godoc
 // @Summary Create a new log entry
 // @Description Creates a new log entry in the system
-// @Tags logs
+// @Tags ingest
 // @Accept  json
 // @Produce json
+// @Param        projectID   path      string  true  "Project ID"
+// @Param        key         path      string  true  "Public key"
 // @Param   request body log.Create true "Log entry creation data"
 // @Success 201 {object} log.Entity "Successfully created log entry"
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 500 {object} string "Internal server error"
-// @Router /logs [post].
+// @Router /ingest/{projectID}:{key}/logs [post].
 func (h *logHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var req log.Create
+	vars := mux.Vars(r)
+	projectID := vars["projectID"]
+	key := vars["key"]
+	if projectID == "" || key == "" {
+		httputils.RespondWithPlainError(w, http.StatusBadRequest, "invalid ingest")
+		return
+	}
 
+	var req log.Create
 	if err := httputils.DecodeRequest(w, r, &req); err != nil {
 		return
 	}
@@ -161,6 +165,8 @@ func (h *logHandler) Create(w http.ResponseWriter, r *http.Request) {
 		httputils.HandleValidatorError(w, err)
 		return
 	}
+
+	req.ProjectID = projectID
 
 	entity, err := h.service.Create(r.Context(), &req)
 	if err != nil {
@@ -183,7 +189,7 @@ func (h *logHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 404 {object} string "Log entry not found"
 // @Failure 500 {object} string "Internal server error"
-// @Router /logs/{id} [put].
+// @Router /v1/logs/{id} [put].
 func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -221,7 +227,7 @@ func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 204 "No Content"
 // @Failure 400 {object} string "Bad Request - when ID is not provided"
 // @Failure 500 {object} string "Internal Server Error - when something goes wrong"
-// @Router /logs/{id} [delete]
+// @Router /v1/logs/{id} [delete]
 func (h *logHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

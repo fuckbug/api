@@ -8,6 +8,7 @@ import (
 
 type Service interface {
 	GetByID(ctx context.Context, id string) (*Entity, error)
+	GetDSNByID(ctx context.Context, id string) (string, error)
 	GetAll(ctx context.Context, params GetAllParams) ([]*Entity, int, error)
 	Create(ctx context.Context, req *Create) (*Entity, error)
 	Update(ctx context.Context, id string, req *Update) (*Entity, error)
@@ -17,12 +18,14 @@ type Service interface {
 type service struct {
 	repo   Repository
 	logger Logger
+	domain string
 }
 
-func NewService(repo Repository, logger Logger) Service {
+func NewService(repo Repository, logger Logger, domain string) Service {
 	return &service{
 		repo:   repo,
 		logger: logger,
+		domain: domain,
 	}
 }
 
@@ -32,6 +35,17 @@ func (s *service) GetByID(ctx context.Context, id string) (*Entity, error) {
 		return nil, err
 	}
 	return toResponse(project), nil
+}
+
+func (s *service) GetDSNByID(ctx context.Context, id string) (string, error) {
+	project, err := s.repo.GetByID(ctx, id)
+	if err != nil {
+		return "", err
+	}
+
+	dsn := "https://" + s.domain + "/ingest/" + project.ID + ":" + project.PublicKey
+
+	return dsn, nil
 }
 
 func (s *service) GetAll(ctx context.Context, params GetAllParams) ([]*Entity, int, error) {

@@ -35,6 +35,7 @@ func RegisterProjectHandlers(
 	router.HandleFunc("", h.Create).Methods(http.MethodPost)
 	router.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	router.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
+	router.HandleFunc("/{id}/dsn", h.GetDSNByID).Methods(http.MethodGet)
 	router.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
 	router.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
 }
@@ -47,7 +48,7 @@ func RegisterProjectHandlers(
 // @Produce json
 // @Success 200 {object} project.Entity
 // @Param id path string true "Project ID"
-// @Router /projects/{id} [get].
+// @Router /v1/projects/{id} [get].
 func (h *projectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -65,6 +66,38 @@ func (h *projectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	httputils.RespondWithJSON(w, http.StatusOK, entity)
 }
 
+// GetDSNByID godoc
+// @Summary Get a project DSN
+// @Description Get a project DSN
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Success 200 {object} string
+// @Param id path string true "Project ID"
+// @Router /v1/projects/{id}/dsn [get].
+func (h *projectHandler) GetDSNByID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id := vars["id"]
+	if id == "" {
+		httputils.RespondWithPlainError(w, http.StatusBadRequest, "id is required")
+		return
+	}
+
+	dsn, err := h.service.GetDSNByID(r.Context(), id)
+	if err != nil {
+		httputils.RespondWithPlainError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	result := struct {
+		Dsn string `json:"dsn"`
+	}{
+		Dsn: dsn,
+	}
+
+	httputils.RespondWithJSON(w, http.StatusOK, result)
+}
+
 // GetAll godoc
 // @Summary Get all projects
 // @Description Retrieves a list of all projects from the system
@@ -75,7 +108,7 @@ func (h *projectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} project.EntityList "Successfully retrieved list of projects"
-// @Router /projects [get].
+// @Router /v1/projects [get].
 func (h *projectHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 
@@ -119,7 +152,7 @@ func (h *projectHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} project.Entity "Successfully created project entry"
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 500 {object} string "Internal server error"
-// @Router /projects [post].
+// @Router /v1/projects [post].
 func (h *projectHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req project.Create
 
@@ -153,7 +186,7 @@ func (h *projectHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 404 {object} string "Project entry not found"
 // @Failure 500 {object} string "Internal server error"
-// @Router /projects/{id} [put].
+// @Router /v1/projects/{id} [put].
 func (h *projectHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
@@ -191,7 +224,7 @@ func (h *projectHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 204 "No Content"
 // @Failure 400 {object} string "Bad Request - when ID is not provided"
 // @Failure 500 {object} string "Internal Server Error - when something goes wrong"
-// @Router /projects/{id} [delete]
+// @Router /v1/projects/{id} [delete]
 func (h *projectHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

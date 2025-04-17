@@ -23,9 +23,7 @@ func RegisterAppHandlers(
 		service: service,
 	}
 
-	v1 := r.PathPrefix("/v1").Subrouter()
-
-	v1.HandleFunc("/health", h.Health).Methods(http.MethodGet)
+	r.HandleFunc("/health", h.Health).Methods(http.MethodGet)
 }
 
 func (h *appHandler) Health(w http.ResponseWriter, r *http.Request) {

@@ -38,7 +38,6 @@ const serverShutdownTimeout = 3 * time.Second
 // @contact.email support@fuckbug.io
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-// @BasePath /v1
 func main() {
 	flag.Parse()
 
@@ -71,7 +70,7 @@ func main() {
 
 	appService := app.New(appLogger)
 	logService := moduleLog.NewService(moduleLog.NewRepository(db, appLogger), appLogger)
-	projectService := moduleProject.NewService(moduleProject.NewRepository(db, appLogger), appLogger)
+	projectService := moduleProject.NewService(moduleProject.NewRepository(db, appLogger), appLogger, config.Domain)
 
 	s := server.New(
 		appLogger,
