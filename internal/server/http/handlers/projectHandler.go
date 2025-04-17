@@ -7,13 +7,13 @@ import (
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/pkg/httputils"
 
-	"github.com/go-playground/validator/v10"
+	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
 type projectHandler struct {
 	logger   Logger
-	validate *validator.Validate
+	validate *v.Validate
 	service  project.Service
 }
 
@@ -24,7 +24,7 @@ func RegisterProjectHandlers(
 ) {
 	h := &projectHandler{
 		logger:   logger,
-		validate: validator.New(),
+		validate: v.New(),
 		service:  service,
 	}
 

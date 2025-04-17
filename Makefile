@@ -12,6 +12,9 @@ up: docker-network docker-up
 down: docker-down
 restart: down up
 
+clean:
+	go clean -modcache && go mod tidy
+
 docker-pull:
 	docker compose -f ./deployments/development/docker-compose.yml pull
 

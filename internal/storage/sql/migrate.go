@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/golang-migrate/migrate/v4"
+	m "github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jmoiron/sqlx"
@@ -32,12 +32,12 @@ func RunMigrations(db *sqlx.DB, log Logger) error {
 		return fmt.Errorf("failed to create migration source: %w", err)
 	}
 
-	m, err := migrate.NewWithInstance("iofs", source, "postgres", driver)
+	mig, err := m.NewWithInstance("iofs", source, "postgres", driver)
 	if err != nil {
 		return fmt.Errorf("failed to create migration instance: %w", err)
 	}
 
-	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+	if err := mig.Up(); err != nil && !errors.Is(err, m.ErrNoChange) {
 		return fmt.Errorf("failed to apply migrations: %w", err)
 	}
 

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
+	v "github.com/go-playground/validator/v10"
 )
 
 type ListResponse[T any] struct {
@@ -62,7 +62,7 @@ func RespondWithError(w http.ResponseWriter, code int, message string, details m
 }
 
 func HandleValidatorError(w http.ResponseWriter, err error) {
-	var ve validator.ValidationErrors
+	var ve v.ValidationErrors
 	if errors.As(err, &ve) {
 		details := make(map[string]string)
 		for _, e := range ve {

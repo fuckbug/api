@@ -7,13 +7,13 @@ import (
 	"github.com/fuckbug/api/internal/modules/log"
 	"github.com/fuckbug/api/pkg/httputils"
 
-	"github.com/go-playground/validator/v10"
+	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
 type logHandler struct {
 	logger   Logger
-	validate *validator.Validate
+	validate *v.Validate
 	service  log.Service
 }
 
@@ -24,7 +24,7 @@ func RegisterLogHandlers(
 ) {
 	h := &logHandler{
 		logger:   logger,
-		validate: validator.New(),
+		validate: v.New(),
 		service:  service,
 	}
 
