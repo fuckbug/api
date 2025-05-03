@@ -10,10 +10,15 @@ services:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
       - traefik.http.routers.fuckbug-api.rule=Host(`api.fuckbug.io`)
-      - traefik.http.routers.fuckbug-api.middlewares=secure-headers
+      - traefik.http.routers.fuckbug-api.middlewares=secure-headers,fuckbug-api-cors-headers
       - traefik.http.routers.fuckbug-api.entryPoints=https
       - traefik.http.routers.fuckbug-api.tls=true
       - traefik.http.routers.fuckbug-api.tls.certResolver=letsEncrypt
+      - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowOriginList=*
+      - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowMethods=*
+      - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowHeaders=*
+      - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlMaxAge=100
+      - traefik.http.middlewares.fuckbug-api-cors-headers.headers.addVaryHeader=true
     networks:
       - traefik-public
 
