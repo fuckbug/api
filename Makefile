@@ -13,7 +13,7 @@ down: docker-down
 restart: down up
 
 generate-docs:
-	swag init -g cmd/fuckbug/main.go
+	swag init -g ./cmd/fuckbug/main.go
 
 clean:
 	go clean -modcache && go mod tidy
