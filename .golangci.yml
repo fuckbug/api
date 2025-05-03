@@ -1,21 +1,22 @@
+version: "2"
+
 run:
   timeout: 5m
   tests: false
 
-issues:
-  exclude-dirs:
-    - vendor
-    - generated
-    - _build
-    - docs
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gocyclo
-    - path: internal/testdata/
-      text: "testdata"
-
 linters:
+  exclusions:
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - gocyclo
+      - path: internal/testdata/
+        text: "testdata"
+    paths:
+      - vendor
+      - generated
+      - _build
+      - docs
   disable:
     - wsl
     - funlen
