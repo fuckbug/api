@@ -7,26 +7,28 @@ jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ^1.24
-
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Generate docs
-        run: make generate-docs
-        working-directory: .
+      - name: Init
+        run: make init
 
       - name: Lint
         run: make lint
-        working-directory: .
 
       - name: Unit tests
         run: make test
-        working-directory: .
+
+      - name: Down
+        run: make docker-down-clear
+
+  build:
+    needs: analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
 
       - name: Build
         run: make build
-        working-directory: .

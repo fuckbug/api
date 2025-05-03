@@ -1,0 +1,9 @@
+root = "."
+tmp_dir = "var/tmp"
+
+[build]
+cmd = "swag init -g ./cmd/fuckbug/main.go && go build -o /opt/app/bin cmd/fuckbug/*"
+bin = "/opt/app/bin"
+args_bin = ["--config", "var/configs/fuckbug/config.json"]
+delay = 500
+exclude_dir = ["docs", "tmp", "var"]

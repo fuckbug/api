@@ -1,6 +1,7 @@
-FROM golang:1.24 AS build
+FROM golang:1.24-alpine AS build
 
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN apk add --no-cache git \
+    go install github.com/swaggo/swag/cmd/swag@latest
 
 ENV BIN_FILE /opt/app/bin
 ENV CODE_DIR /go/src/

@@ -3,12 +3,16 @@ services:
     container_name: fuckbug-api
     build:
       context: ../..
-      dockerfile: ./build/fuckbug/Dockerfile
+      dockerfile: ./deployments/development/Dockerfile
     volumes:
-      - ../../var/configs/fuckbug:/configs/fuckbug
-    command: sh -c "./opt/app/bin --config configs/fuckbug/config.json"
+      - ../../.:/app
+    environment:
+      - AIR_WORKSPACE_ROOT=/app
+      - GOPATH=/go
+    command: air -c .air.toml
     ports:
       - "80:80"
+      - "2345:2345"
     networks:
       - fuckbug_network
 
