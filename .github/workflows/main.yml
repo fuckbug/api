@@ -50,6 +50,12 @@ jobs:
           cache: true
           cache-dependency-path: '**/go.sum'
 
+      - name: Install swag
+        run: go install github.com/swaggo/swag/cmd/swag@latest
+
+      - name: Generate Swagger docs
+        run: swag init -g ./cmd/fuckbug/main.go
+
       - name: Unit tests
         run: go test -v -count=1 -race -timeout=1m ./...
 
