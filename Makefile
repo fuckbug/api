@@ -27,8 +27,6 @@ build:
 push:
 	docker push fuckbugio/api:1.0.0
 
-deploy: build push
-
 docker-up:
 	docker compose -f ./deployments/development/docker-compose.yml up -d
 
