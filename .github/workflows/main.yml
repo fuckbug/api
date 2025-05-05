@@ -81,5 +81,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: ./build/fuckbug/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
