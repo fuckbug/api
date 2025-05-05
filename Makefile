@@ -21,13 +21,13 @@ docker-pull:
 docker-build:
 	docker compose -f ./deployments/development/docker-compose.yml build --pull
 
-dockerhub-build:
+build:
 	docker build --platform=linux/amd64 -f ./build/fuckbug/Dockerfile -t fuckbugio/api:1.0.0 .
 
-dockerhub-push:
+push:
 	docker push fuckbugio/api:1.0.0
 
-dockerhub-deploy: dockerhub-build dockerhub-push
+deploy: build push
 
 docker-up:
 	docker compose -f ./deployments/development/docker-compose.yml up -d
@@ -41,21 +41,6 @@ docker-down-clear:
 docker-network:
 	docker network create fuckbug_network || true
 
-build:
-	go build -v -o $(BIN) -ldflags "$(LDFLAGS)" ./cmd/fuckbug
-
-build-img:
-	docker build \
-		--build-arg=LDFLAGS="$(LDFLAGS)" \
-		-t $(DOCKER_IMG) \
-		-f build/Dockerfile .
-
-run-img: build-img
-	docker run $(DOCKER_IMG)
-
-version: build
-	$(BIN) version
-
 
 migrations-new:
 	migrate create -ext sql -dir ./internal/storage/sql/migrations -seq init
@@ -65,17 +50,8 @@ test:
 	go test -race -count 100 ./internal/...
 
 
-remove-lint-deps:
-	rm $(which golangci-lint)
-
-install-lint-deps:
-	(which golangci-lint > /dev/null) || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.64.2
-
-lint: install-lint-deps
-	PATH=$(shell go env GOPATH)/bin:$$PATH golangci-lint run
-
-lint-fix: install-lint-deps
-	golangci-lint run --fix
+lint:
+	docker compose -f ./deployments/development/docker-compose.yml run --rm golangci-lint
 
 
-.PHONY: build run build-img run-img version test lint
+.PHONY: test lint

@@ -9,16 +9,24 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=traefik-public
+      # HTTPS router
       - traefik.http.routers.fuckbug-api.rule=Host(`api.fuckbug.io`)
       - traefik.http.routers.fuckbug-api.middlewares=secure-headers,fuckbug-api-cors-headers
       - traefik.http.routers.fuckbug-api.entryPoints=https
       - traefik.http.routers.fuckbug-api.tls=true
       - traefik.http.routers.fuckbug-api.tls.certResolver=letsEncrypt
+      # HTTP router (redirect to HTTPS)
+      - traefik.http.routers.fuckbug-api-http.rule=Host(`api.fuckbug.io`)
+      - traefik.http.routers.fuckbug-api-http.entryPoints=http
+      - traefik.http.routers.fuckbug-api-http.middlewares=redirect-to-https
+      # CORS
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowOriginList=*
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowMethods=*
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowHeaders=*
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlMaxAge=100
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.addVaryHeader=true
+      # Service
+      - traefik.http.services.fuckbug-api.loadBalancer.server.port=80
     networks:
       - traefik-public
 
