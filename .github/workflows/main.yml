@@ -22,8 +22,6 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ~${{ env.GO_VERSION }}
-          cache: true
-          cache-dependency-path: '**/go.sum'
 
       - name: Install swag
         run: go install github.com/swaggo/swag/cmd/swag@latest
@@ -49,8 +47,6 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ~${{ env.GO_VERSION }}
-          cache: true
-          cache-dependency-path: '**/go.sum'
 
       - name: Install swag
         run: go install github.com/swaggo/swag/cmd/swag@latest
