@@ -76,12 +76,12 @@ jobs:
       - name: List files in context
         run: |
           echo "Files in context directory:"
-          ls -la ./../..
+          ls -la .
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./../..
+          context: .
           file: ./build/fuckbug/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
