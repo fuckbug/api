@@ -14,7 +14,7 @@ RUN go mod download
 
 COPY . ${CODE_DIR}
 
-RUN swag init -g cmd/fuckbug/main.go
+RUN swag init -g ./cmd/fuckbug/main.go
 COPY docs ${CODE_DIR}docs
 
 ARG LDFLAGS
