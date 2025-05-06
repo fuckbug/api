@@ -29,7 +29,7 @@ ENV BIN_FILE /opt/app/bin
 COPY --from=build ${BIN_FILE} ${BIN_FILE}
 
 ENV CONFIG_FILE /etc/app/config.json
-COPY ./configs/fuckbug/config.json ${CONFIG_FILE}
+COPY configs/fuckbug/config.json ${CONFIG_FILE}
 
 EXPOSE 80
 
