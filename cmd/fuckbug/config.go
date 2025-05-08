@@ -1,6 +1,9 @@
 package main
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"strings"
+)
 
 type Config struct {
 	Logger   loggerConf
@@ -20,13 +23,16 @@ type postgresConf struct {
 func LoadConfig(path string) (Config, error) {
 	config := Config{}
 
-	viper.SetConfigFile(path)
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return config, err
+	if path != "" {
+		viper.SetConfigFile(path)
+		if err := viper.ReadInConfig(); err != nil {
+			return config, err
+		}
 	}
 
-	err = viper.Unmarshal(&config)
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+	err := viper.Unmarshal(&config)
 	return config, err
 }
