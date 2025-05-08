@@ -4,33 +4,33 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/fuckbug/api/internal/modules/log"
+	"github.com/fuckbug/api/internal/modules/errors"
 	"github.com/fuckbug/api/pkg/httputils"
 
 	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
-type logHandler struct {
+type errorHandler struct {
 	logger   Logger
 	validate *v.Validate
-	service  log.Service
+	service  errors.Service
 }
 
-func RegisterLogHandlers(
+func RegisterErrorHandlers(
 	r *mux.Router,
 	logger Logger,
-	service log.Service,
+	service errors.Service,
 ) {
-	h := &logHandler{
+	h := &errorHandler{
 		logger:   logger,
 		validate: v.New(),
 		service:  service,
 	}
 
-	r.HandleFunc("/ingest/{projectID}:{key}/logs", h.Create).Methods(http.MethodPost)
+	r.HandleFunc("/ingest/{projectID}:{key}/errors", h.Create).Methods(http.MethodPost)
 
-	routerV1 := r.PathPrefix("/v1/logs").Subrouter()
+	routerV1 := r.PathPrefix("/v1/errors").Subrouter()
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
@@ -38,15 +38,15 @@ func RegisterLogHandlers(
 }
 
 // GetByID godoc
-// @Summary Get a log by ID
-// @Description Get a log by ID
-// @Tags logs
+// @Summary Get an error by ID
+// @Description Get an error by ID
+// @Tags errors
 // @Accept json
 // @Produce json
-// @Success 200 {object} log.Entity
-// @Param id path string true "Log ID"
-// @Router /v1/logs/{id} [get].
-func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+// @Success 200 {object} errors.Entity
+// @Param id path string true "Error ID"
+// @Router /v1/errors/{id} [get].
+func (h *errorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	if id == "" {
@@ -64,22 +64,21 @@ func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetAll godoc
-// @Summary Get all logs
-// @Description Retrieves a list of all logs from the system
-// @Tags logs
+// @Summary Get all errors
+// @Description Retrieves a list of all errors from the system
+// @Tags errors
 // @Accept  json
 // @Produce  json
 // @Param projectId query string false "Project ID"
-// @Param timeFrom query int false "Time logs from"
-// @Param timeTo query int false "Time logs to"
-// @Param level query string false "Filter by log level" Enums(DEBUG, INFO, WARN, ERROR)
+// @Param timeFrom query int false "Time errors from"
+// @Param timeTo query int false "Time errors to"
 // @Param search query string false "Search in message field"
 // @Param sort query string false "Sort order (asc or desc)" default(desc) Enums(asc, desc)
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
-// @Success 200 {object} log.EntityList "Successfully retrieved list of logs"
-// @Router /v1/logs [get].
-func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+// @Success 200 {object} errors.EntityList "Successfully retrieved list of errors"
+// @Router /v1/errors [get].
+func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 
 	limit, err := strconv.Atoi(queryParams.Get("limit"))
@@ -109,15 +108,13 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		sortOrder = httputils.DefaultSort
 	}
 
-	levelFilter := queryParams.Get("level")
 	searchQuery := queryParams.Get("search")
 
-	params := log.GetAllParams{
-		FilterParams: log.FilterParams{
+	params := errors.GetAllParams{
+		FilterParams: errors.FilterParams{
 			ProjectID:   projectID,
 			TimeFrom:    timeFrom,
 			TimeTo:      timeTo,
-			LevelFilter: levelFilter,
 			SearchQuery: searchQuery,
 		},
 		SortOrder: sortOrder,
@@ -125,36 +122,36 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		Offset:    offset,
 	}
 
-	logs, totalCount, err := h.service.GetAll(r.Context(), params)
+	entities, totalCount, err := h.service.GetAll(r.Context(), params)
 	if err != nil {
 		httputils.RespondWithPlainError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	httputils.RespondWithJSON(w, http.StatusOK, httputils.NewListResponse(totalCount, logs))
+	httputils.RespondWithJSON(w, http.StatusOK, httputils.NewListResponse(totalCount, entities))
 }
 
 // Create godoc
-// @Summary Create a new log entry
-// @Description Creates a new log entry in the system
+// @Summary Create a new error entry
+// @Description Creates a new error entry in the system
 // @Tags ingest
 // @Accept  json
 // @Produce json
 // @Param        projectID   path      string  true  "Project ID"
 // @Param        key         path      string  true  "Public key"
-// @Param   request body log.Create true "Log entry creation data"
-// @Success 201 {object} log.Entity "Successfully created log entry"
+// @Param   request body errors.Create true "Error entry creation data"
+// @Success 201 {object} errors.Entity "Successfully created error entry"
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 500 {object} string "Internal server error"
-// @Router /ingest/{projectID}:{key}/logs [post].
-func (h *logHandler) Create(w http.ResponseWriter, r *http.Request) {
+// @Router /ingest/{projectID}:{key}/errors [post].
+func (h *errorHandler) Create(w http.ResponseWriter, r *http.Request) {
 	projectID, err := getProjectIDAndKey(r)
 	if err != nil {
 		httputils.RespondWithPlainError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	var req log.Create
+	var req errors.Create
 	if err := httputils.DecodeRequest(w, r, &req); err != nil {
 		return
 	}
@@ -176,19 +173,19 @@ func (h *logHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // Update godoc
-// @Summary Update a log entry
-// @Description Updates an existing log entry
-// @Tags logs
+// @Summary Update an error entry
+// @Description Updates an existing error entry
+// @Tags errors
 // @Accept  json
 // @Produce json
-// @Param   id path string true "Log entry ID"
-// @Param   request body log.Update true "Log update data"
-// @Success 200 {object} log.Entity "Successfully updated log entry"
+// @Param   id path string true "Error entry ID"
+// @Param   request body errors.Update true "Error update data"
+// @Success 200 {object} errors.Entity "Successfully updated error entry"
 // @Failure 400 {object} string "Invalid input data"
-// @Failure 404 {object} string "Log entry not found"
+// @Failure 404 {object} string "Error entry not found"
 // @Failure 500 {object} string "Internal server error"
-// @Router /v1/logs/{id} [put].
-func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
+// @Router /v1/errors/{id} [put].
+func (h *errorHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	if id == "" {
@@ -196,7 +193,7 @@ func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req log.Update
+	var req errors.Update
 	if err := httputils.DecodeRequest(w, r, &req); err != nil {
 		return
 	}
@@ -216,17 +213,17 @@ func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // Delete godoc
-// @Summary Delete a log entry
-// @Description Delete a log entry by its ID
-// @Tags logs
+// @Summary Delete an error entry
+// @Description Delete an error entry by its ID
+// @Tags errors
 // @Accept  json
 // @Produce  json
-// @Param id path string true "Log entry ID"
+// @Param id path string true "Error entry ID"
 // @Success 204 "No Content"
 // @Failure 400 {object} string "Bad Request - when ID is not provided"
 // @Failure 500 {object} string "Internal Server Error - when something goes wrong"
-// @Router /v1/logs/{id} [delete]
-func (h *logHandler) Delete(w http.ResponseWriter, r *http.Request) {
+// @Router /v1/errors/{id} [delete]
+func (h *errorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	if id == "" {

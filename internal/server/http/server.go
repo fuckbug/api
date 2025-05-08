@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fuckbug/api/internal/modules/app"
+	"github.com/fuckbug/api/internal/modules/errors"
 	"github.com/fuckbug/api/internal/modules/log"
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
@@ -27,6 +28,7 @@ func New(
 	logger handlers.Logger,
 	appService app.Service,
 	logService log.Service,
+	errorService errors.Service,
 	projectService project.Service,
 	host string,
 	port int,
@@ -35,6 +37,7 @@ func New(
 		logger,
 		appService,
 		logService,
+		errorService,
 		projectService,
 	)
 
