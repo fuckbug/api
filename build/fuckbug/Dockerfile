@@ -14,8 +14,7 @@ RUN go mod download
 
 COPY . ${CODE_DIR}
 
-RUN swag init -g cmd/fuckbug/main.go
-COPY docs ${CODE_DIR}docs
+RUN swag init -g ./cmd/fuckbug/main.go
 
 ARG LDFLAGS
 RUN CGO_ENABLED=0 go build -ldflags "$LDFLAGS" -o ${BIN_FILE} cmd/fuckbug/*
