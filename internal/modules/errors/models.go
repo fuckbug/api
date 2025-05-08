@@ -28,7 +28,7 @@ type Create struct {
 	File       string `json:"file" validate:"required" example:"index.php"`
 	Line       int    `json:"line" validate:"required" example:"1"`
 	Context    string `json:"context" example:"message context"`
-	ProjectID  string
+	ProjectID  string `json:"-"`
 }
 
 type Update struct {

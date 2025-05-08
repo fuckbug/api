@@ -27,7 +27,7 @@ type Create struct {
 	Level     string `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR"`
 	Message   string `json:"message" validate:"required" example:"first log message"`
 	Context   string `json:"context" example:"message context"`
-	ProjectID string
+	ProjectID string `json:"-"`
 }
 
 type Update struct {
