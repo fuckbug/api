@@ -15,10 +15,6 @@ services:
       - traefik.http.routers.fuckbug-api.entryPoints=https
       - traefik.http.routers.fuckbug-api.tls=true
       - traefik.http.routers.fuckbug-api.tls.certResolver=letsEncrypt
-      # HTTP router (redirect to HTTPS)
-      - traefik.http.routers.fuckbug-api-http.rule=Host(`api.fuckbug.io`)
-      - traefik.http.routers.fuckbug-api-http.entryPoints=http
-      - traefik.http.routers.fuckbug-api-http.middlewares=redirect-to-https
       # CORS
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowOriginList=*
       - traefik.http.middlewares.fuckbug-api-cors-headers.headers.accessControlAllowMethods=*
