@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS logs (
     message TEXT NOT NULL,
     context TEXT,
     time BIGINT NOT NULL,
-    created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL
+    created_at INT NOT NULL,
+    updated_at INT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_logs_time ON logs(time);

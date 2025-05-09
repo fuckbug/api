@@ -5,6 +5,7 @@ import (
 
 	"github.com/fuckbug/api/internal/modules/app"
 	"github.com/fuckbug/api/internal/modules/errors"
+	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
 	"github.com/fuckbug/api/internal/modules/log"
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
@@ -17,6 +18,7 @@ func NewHandler(
 	appService app.Service,
 	logService log.Service,
 	errorService errors.Service,
+	errorGroupService errorsGroup.Service,
 	projectService project.Service,
 ) http.Handler {
 	r := mux.NewRouter()
@@ -28,6 +30,7 @@ func NewHandler(
 	handlers.RegisterAppHandlers(r, logger, appService)
 	handlers.RegisterLogHandlers(r, logger, logService)
 	handlers.RegisterErrorHandlers(r, logger, errorService)
+	handlers.RegisterErrorGroupHandlers(r, logger, errorGroupService)
 	handlers.RegisterProjectHandlers(r, logger, projectService)
 
 	return r

@@ -9,6 +9,7 @@ type Logger interface {
 
 type FilterParams struct {
 	ProjectID   string
+	Fingerprint string
 	TimeFrom    int
 	TimeTo      int
 	SearchQuery string

@@ -9,6 +9,7 @@ import (
 
 	"github.com/fuckbug/api/internal/modules/app"
 	"github.com/fuckbug/api/internal/modules/errors"
+	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
 	"github.com/fuckbug/api/internal/modules/log"
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
@@ -29,6 +30,7 @@ func New(
 	appService app.Service,
 	logService log.Service,
 	errorService errors.Service,
+	errorGroupService errorsGroup.Service,
 	projectService project.Service,
 	host string,
 	port int,
@@ -38,6 +40,7 @@ func New(
 		appService,
 		logService,
 		errorService,
+		errorGroupService,
 		projectService,
 	)
 

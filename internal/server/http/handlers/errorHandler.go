@@ -70,6 +70,7 @@ func (h *errorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param projectId query string false "Project ID"
+// @Param groupId query string false "Group ID"
 // @Param timeFrom query int false "Time errors from"
 // @Param timeTo query int false "Time errors to"
 // @Param search query string false "Search in message field"
@@ -92,6 +93,7 @@ func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	projectID := queryParams.Get("projectId")
+	groupID := queryParams.Get("groupId")
 
 	timeFrom, err := strconv.Atoi(queryParams.Get("timeFrom"))
 	if err != nil {
@@ -113,6 +115,7 @@ func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	params := errors.GetAllParams{
 		FilterParams: errors.FilterParams{
 			ProjectID:   projectID,
+			Fingerprint: groupID,
 			TimeFrom:    timeFrom,
 			TimeTo:      timeTo,
 			SearchQuery: searchQuery,

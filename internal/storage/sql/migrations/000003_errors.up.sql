@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS errors (
     line INTEGER NOT NULL,
     context TEXT,
     time BIGINT NOT NULL,
-    created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL
+    created_at INT NOT NULL,
+    updated_at INT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_errors_fingerprint ON errors(fingerprint);
@@ -25,11 +25,11 @@ CREATE TABLE error_groups (
   message TEXT NOT NULL,
   file VARCHAR(500) NOT NULL,
   line INTEGER NOT NULL,
-  first_seen_at BIGINT NOT NULL,
-  last_seen_at BIGINT NOT NULL,
-  counter BIGINT DEFAULT 1,
+  first_seen_at INT NOT NULL,
+  last_seen_at INT NOT NULL,
+  counter INT DEFAULT 1,
   status error_groups_status DEFAULT 'unresolved'
 );
 
-CREATE INDEX IF NOT EXISTS idx_errors_time ON error_groups(project_id);
-CREATE INDEX IF NOT EXISTS idx_errors_time ON error_groups(status);
+CREATE INDEX IF NOT EXISTS idx_error_groups_project_id ON error_groups(project_id);
+CREATE INDEX IF NOT EXISTS idx_error_groups_status ON error_groups(status);

@@ -106,6 +106,48 @@ func (r *repository) GetByID(ctx context.Context, id string) (*Error, error) {
 }
 
 func (r *repository) Create(ctx context.Context, e *Error) error {
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			r.logger.Warn(fmt.Sprintf("failed to rollback transaction: %v", err))
+		}
+	}()
+
+	const errorGroupQuery = `
+        INSERT INTO error_groups (id, project_id, file, line, message, first_seen_at, last_seen_at, counter)
+        VALUES (:id, :project_id, :file, :line, :message, :first_seen_at, :last_seen_at, 1)
+        ON CONFLICT (id) DO UPDATE 
+        SET counter = error_groups.counter + 1, last_seen_at = EXCLUDED.last_seen_at
+    `
+
+	now := time.Now().Unix()
+	errorGroup := struct {
+		ID          string `db:"id"`
+		ProjectID   string `db:"project_id"`
+		File        string `db:"file"`
+		Line        int    `db:"line"`
+		Message     string `db:"message"`
+		FirstSeenAt int    `db:"first_seen_at"`
+		LastSeenAt  int    `db:"last_seen_at"`
+	}{
+		ID:          e.Fingerprint,
+		ProjectID:   e.ProjectID,
+		File:        e.File,
+		Line:        e.Line,
+		Message:     e.Message,
+		FirstSeenAt: int(now),
+		LastSeenAt:  int(now),
+	}
+
+	_, err = tx.NamedExecContext(ctx, errorGroupQuery, errorGroup)
+	if err != nil {
+		return fmt.Errorf("failed to upsert error group: %w", err)
+	}
+
 	const query = `INSERT INTO errors 
 		(id, project_id, fingerprint, message, stacktrace, file, line, context, time, created_at, updated_at)
 		VALUES (:id, :project_id, :fingerprint, :message, :stacktrace, :file, :line, :context, :time, :created_at, :updated_at)`
@@ -114,13 +156,16 @@ func (r *repository) Create(ctx context.Context, e *Error) error {
 		e.ID = uuid.New().String()
 	}
 
-	now := time.Now().UnixMilli()
 	e.CreatedAt = now
 	e.UpdatedAt = now
 
-	_, err := r.db.NamedExecContext(ctx, query, e)
+	_, err = r.db.NamedExecContext(ctx, query, e)
 	if err != nil {
 		return fmt.Errorf("failed to create error: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 	return nil
 }
@@ -180,6 +225,11 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 	if params.ProjectID != "" {
 		query += " AND project_id = :projectId"
 		args["projectId"] = params.ProjectID
+	}
+
+	if params.Fingerprint != "" {
+		query += " AND fingerprint = :fingerprint"
+		args["fingerprint"] = params.Fingerprint
 	}
 
 	if params.TimeFrom != 0 {
