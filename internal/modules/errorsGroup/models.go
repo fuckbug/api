@@ -24,7 +24,6 @@ type GetAllParams struct {
 type Entity struct {
 	ID          string `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
 	Message     string `json:"message" validate:"required" example:"Error message"`
-	Stacktrace  string `json:"stacktrace" validate:"required" example:"Stacktrace"`
 	File        string `json:"file" validate:"required" example:"index.php"`
 	Line        int    `json:"line" validate:"required" example:"1"`
 	FirstSeenAt int    `json:"firstSeenAt" example:"1704067200"`

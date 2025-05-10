@@ -116,9 +116,8 @@ func generateFingerprint(e *Error) string {
 	cleanMsg := regexp.MustCompile(`\d+|0x[0-9a-f]+`).ReplaceAllString(e.Message, "*")
 
 	data := fmt.Sprintf(
-		"%s:%s:%s:%d",
+		"%s:%s:%d",
 		cleanMsg,
-		e.Stacktrace,
 		e.File,
 		e.Line,
 	)
