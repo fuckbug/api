@@ -168,10 +168,10 @@ func (r *repository) Create(ctx context.Context, l *Log) error {
 	}()
 
 	const logGroupQuery = `
-        INSERT INTO error_groups (id, project_id, level, message, first_seen_at, last_seen_at, counter)
+        INSERT INTO log_groups (id, project_id, level, message, first_seen_at, last_seen_at, counter)
         VALUES (:id, :project_id, :level, :message, :first_seen_at, :last_seen_at, 1)
         ON CONFLICT (id) DO UPDATE 
-        SET counter = error_groups.counter + 1, last_seen_at = EXCLUDED.last_seen_at
+        SET counter = log_groups.counter + 1, last_seen_at = EXCLUDED.last_seen_at
     `
 
 	now := time.Now().Unix()
