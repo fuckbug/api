@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/fuckbug/api/pkg/pointers"
 	"github.com/google/uuid"
 )
 
@@ -58,14 +59,24 @@ func (s *service) GetAll(ctx context.Context, params GetAllParams) ([]*Entity, i
 
 func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 	entity := &Error{
-		ID:         uuid.New().String(),
-		ProjectID:  req.ProjectID,
-		Message:    req.Message,
-		Stacktrace: req.Stacktrace,
-		File:       req.File,
-		Line:       req.Line,
-		Context:    req.Context,
-		Time:       req.Time,
+		ID:          uuid.New().String(),
+		ProjectID:   req.ProjectID,
+		Message:     req.Message,
+		Stacktrace:  req.Stacktrace,
+		File:        req.File,
+		Line:        req.Line,
+		Context:     req.Context,
+		Ip:          req.Ip,
+		Url:         req.Url,
+		Method:      req.Method,
+		Headers:     req.Headers,
+		QueryParams: req.QueryParams,
+		BodyParams:  req.BodyParams,
+		Cookies:     req.Cookies,
+		Session:     req.Session,
+		Files:       req.Files,
+		Env:         req.Env,
+		Time:        req.Time,
 	}
 
 	entity.Fingerprint = generateFingerprint(entity)
@@ -95,7 +106,7 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Line != 0 {
 		entity.Line = req.Line
 	}
-	if req.Context != "" {
+	if pointers.DerefString(req.Context) != "" {
 		entity.Context = req.Context
 	}
 
@@ -128,12 +139,22 @@ func generateFingerprint(e *Error) string {
 
 func toResponse(e *Error) *Entity {
 	return &Entity{
-		ID:         e.ID,
-		Message:    e.Message,
-		Stacktrace: e.Stacktrace,
-		File:       e.File,
-		Line:       e.Line,
-		Context:    e.Context,
-		Time:       e.Time,
+		ID:          e.ID,
+		Message:     e.Message,
+		Stacktrace:  e.Stacktrace,
+		File:        e.File,
+		Line:        e.Line,
+		Context:     e.Context,
+		Ip:          e.Ip,
+		Url:         e.Url,
+		Method:      e.Method,
+		Headers:     e.Headers,
+		QueryParams: e.QueryParams,
+		BodyParams:  e.BodyParams,
+		Cookies:     e.Cookies,
+		Session:     e.Session,
+		Files:       e.Files,
+		Env:         e.Env,
+		Time:        e.Time,
 	}
 }

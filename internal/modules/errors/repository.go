@@ -36,8 +36,12 @@ func NewRepository(db *sqlx.DB, logger Logger) Repository {
 
 func (r *repository) GetAll(ctx context.Context, params GetAllParams) ([]*Error, error) {
 	query := `
-        SELECT id, project_id, fingerprint, message, stacktrace, file, line, context, time, created_at, updated_at 
-        FROM errors 
+        SELECT 
+            id, project_id, fingerprint, message, stacktrace, file, line, context,
+            ip, url, method, headers, query_params, body_params, cookies, session, files, env,
+            time, created_at, updated_at 
+        FROM
+            errors 
         WHERE 1=1
     `
 
@@ -91,8 +95,15 @@ func (r *repository) Count(ctx context.Context, params FilterParams) (int, error
 }
 
 func (r *repository) GetByID(ctx context.Context, id string) (*Error, error) {
-	const query = `SELECT id, project_id, fingerprint, message, stacktrace, file, line, context, time, created_at, updated_at 
-		FROM errors WHERE id = $1`
+	const query = `
+		SELECT
+			id, project_id, fingerprint, message, stacktrace, file, line, context,
+			ip, url, method, headers, query_params, body_params, cookies, session, files, env,
+			time, created_at, updated_at 
+		FROM
+		    errors
+		WHERE id = $1
+	`
 
 	var entity Error
 	err := r.db.GetContext(ctx, &entity, query, id)
@@ -148,9 +159,17 @@ func (r *repository) Create(ctx context.Context, e *Error) error {
 		return fmt.Errorf("failed to upsert error group: %w", err)
 	}
 
-	const query = `INSERT INTO errors 
-		(id, project_id, fingerprint, message, stacktrace, file, line, context, time, created_at, updated_at)
-		VALUES (:id, :project_id, :fingerprint, :message, :stacktrace, :file, :line, :context, :time, :created_at, :updated_at)`
+	const query = `
+		INSERT INTO errors (
+			id, project_id, fingerprint, message, stacktrace, file, line, context,
+			ip, url, method, headers, query_params, body_params, cookies, session, files, env,
+			time, created_at, updated_at
+		) VALUES (
+		  	:id, :project_id, :fingerprint, :message, :stacktrace, :file, :line, :context,
+		  	:ip, :url, :method, :headers, :query_params, :body_params, :cookies, :session, :files, :env,
+		  	:time, :created_at, :updated_at
+		)
+	`
 
 	if e.ID == "" {
 		e.ID = uuid.New().String()
