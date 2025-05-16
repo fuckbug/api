@@ -5,8 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"regexp"
-
 	"github.com/fuckbug/api/pkg/pointers"
 	"github.com/google/uuid"
 )
@@ -124,11 +122,8 @@ func (s *service) Delete(ctx context.Context, id string) error {
 }
 
 func generateFingerprint(e *Error) string {
-	cleanMsg := regexp.MustCompile(`\d+|0x[0-9a-f]+`).ReplaceAllString(e.Message, "*")
-
 	data := fmt.Sprintf(
-		"%s:%s:%d",
-		cleanMsg,
+		"%s:%d",
 		e.File,
 		e.Line,
 	)
