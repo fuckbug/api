@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	loggroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"time"
 
 	"github.com/google/uuid"
@@ -106,33 +107,82 @@ func (r *repository) GetByID(ctx context.Context, id string) (*Log, error) {
 }
 
 func (r *repository) Create(ctx context.Context, l *Log) error {
-	const query = `INSERT INTO logs 
-		(id, project_id, level, message, context, time, created_at, updated_at)
-		VALUES (:id, :project_id, :level, :message, :context, :time, :created_at, :updated_at)`
+
+	tx, err := r.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			r.logger.Warn(fmt.Sprintf("failed to rollback transaction: %v", err))
+		}
+	}()
+
+	const logGroupQuery = `
+        INSERT INTO error_groups (id, project_id, file, line, message, first_seen_at, last_seen_at, counter)
+        VALUES (:id, :project_id, :file, :line, :message, :first_seen_at, :last_seen_at, 1)
+        ON CONFLICT (id) DO UPDATE 
+        SET counter = error_groups.counter + 1, last_seen_at = EXCLUDED.last_seen_at
+    `
+
+	now := time.Now().Unix()
+	logGroup := loggroup.Group{
+		ID:          l.Fingerprint,
+		ProjectID:   l.ProjectID,
+		Level:       loggroup.Level(l.Level),
+		Message:     l.Message,
+		FirstSeenAt: int(now),
+		LastSeenAt:  int(now),
+		Counter:     0,
+		Status:      loggroup.StatusUnresolved,
+	}
+
+	_, err = tx.NamedExecContext(ctx, logGroupQuery, logGroup)
+	if err != nil {
+		return fmt.Errorf("failed to upsert log group: %w", err)
+	}
+
+	const query = `
+		INSERT INTO logs (
+	  		id, project_id, fingerprint, level, message, context, time, created_at, updated_at
+		) VALUES (
+	  		:id, :project_id, :fingerprint, :level, :message, :context, :time, :created_at, :updated_at
+		)
+	`
 
 	if l.ID == "" {
 		l.ID = uuid.New().String()
 	}
 
-	now := time.Now().UnixMilli()
 	l.CreatedAt = now
 	l.UpdatedAt = now
 
-	_, err := r.db.NamedExecContext(ctx, query, l)
+	_, err = r.db.NamedExecContext(ctx, query, l)
 	if err != nil {
 		return fmt.Errorf("failed to create log: %w", err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 	return nil
 }
 
 func (r *repository) Update(ctx context.Context, id string, updated *Log) error {
-	const query = `UPDATE logs 
-		SET level = :level,
+	const query = `
+		UPDATE
+		    logs 
+		SET
+		    fingerprint = :fingerprint,
+		    level = :level,
 		    message = :message,
 		    context = :context,
 		    time = :time,
 		    updated_at = :updated_at
-		WHERE id = :id`
+		WHERE
+		    id = :id
+	`
 
 	updated.ID = id
 	updated.UpdatedAt = time.Now().UnixMilli()
@@ -176,6 +226,11 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 	if params.ProjectID != "" {
 		query += " AND project_id = :projectId"
 		args["projectId"] = params.ProjectID
+	}
+
+	if params.Fingerprint != "" {
+		query += " AND fingerprint = :fingerprint"
+		args["fingerprint"] = params.Fingerprint
 	}
 
 	if params.TimeFrom != 0 {

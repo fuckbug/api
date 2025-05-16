@@ -2,7 +2,11 @@ package log
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"fmt"
+	"github.com/fuckbug/api/pkg/pointers"
 
 	"github.com/google/uuid"
 )
@@ -69,6 +73,8 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		Time:      req.Time,
 	}
 
+	log.Fingerprint = generateFingerprint(log)
+
 	if err := s.repo.Create(ctx, log); err != nil {
 		return nil, err
 	}
@@ -91,9 +97,11 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Message != "" {
 		log.Message = req.Message
 	}
-	if req.Context != "" {
+	if pointers.DerefString(req.Context) != "" {
 		log.Context = req.Context
 	}
+
+	log.Fingerprint = generateFingerprint(log)
 
 	if err := s.repo.Update(ctx, id, log); err != nil {
 		return nil, err
@@ -113,6 +121,17 @@ func isValidLogLevel(level string) bool {
 	default:
 		return false
 	}
+}
+
+func generateFingerprint(e *Log) string {
+	data := fmt.Sprintf(
+		"%s:%s",
+		e.Level,
+		e.Message,
+	)
+
+	hash := sha256.Sum256([]byte(data))
+	return hex.EncodeToString(hash[:])
 }
 
 func toResponse(l *Log) *Entity {

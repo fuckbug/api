@@ -70,6 +70,7 @@ func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param projectId query string false "Project ID"
+// @Param groupId query string false "Group ID"
 // @Param timeFrom query int false "Time logs from"
 // @Param timeTo query int false "Time logs to"
 // @Param level query string false "Filter by log level" Enums(DEBUG, INFO, WARN, ERROR)
@@ -93,6 +94,7 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	projectID := queryParams.Get("projectId")
+	groupID := queryParams.Get("groupId")
 
 	timeFrom, err := strconv.Atoi(queryParams.Get("timeFrom"))
 	if err != nil {
@@ -115,6 +117,7 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	params := log.GetAllParams{
 		FilterParams: log.FilterParams{
 			ProjectID:   projectID,
+			Fingerprint: groupID,
 			TimeFrom:    timeFrom,
 			TimeTo:      timeTo,
 			LevelFilter: levelFilter,
