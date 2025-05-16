@@ -23,40 +23,23 @@ type GetAllParams struct {
 }
 
 type Create struct {
-	// @description Timestamp of the error in milliseconds (Unix epoch)
-	Time int64 `json:"time" validate:"required" example:"1704067200000" format:"int64"`
-	// @description Human-readable error message
-	Message string `json:"message" validate:"required" example:"Division by zero in calculate()"`
-	// @description Full error stack trace
-	Stacktrace string `json:"stacktrace" validate:"required" example:"at index.php:15, at main(), at calculate()"`
-	// @description Path to the file where the error occurred
-	File string `json:"file" validate:"required" example:"/var/www/app/index.php"`
-	// @description Line number in the file where the error occurred
-	Line int `json:"line" validate:"required" example:"15"`
-	// @description Additional error context (JSON-encoded)
-	Context *string `json:"context" example:"{\"userId\": 123, \"action\": \"calculate\", \"input\": {\"a\": 5, \"b\": 0}}"`
-	// @description IP address of the client (optional)
-	IP *string `json:"ip,omitempty" example:"192.168.1.1"`
-	// @description URL where the error occurred (optional)
-	URL *string `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
-	// @description HTTP method (GET, POST, etc.) (optional)
-	Method *string `json:"method,omitempty" example:"POST"`
-	// @description HTTP headers (JSON-encoded) (optional)
-	Headers *string `json:"headers,omitempty" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
-	// @description Query parameters (JSON-encoded) (optional)
+	Time        int64   `json:"time" validate:"required" example:"1704067200000" format:"int64"`
+	Message     string  `json:"message" validate:"required" example:"Division by zero in calculate()"`
+	Stacktrace  string  `json:"stacktrace" validate:"required" example:"at index.php:15, at main(), at calculate()"`
+	File        string  `json:"file" validate:"required" example:"/var/www/app/index.php"`
+	Line        int     `json:"line" validate:"required" example:"15"`
+	Context     *string `json:"context" example:"{\"userId\": 123, \"action\": \"calculate\", \"input\": {\"a\": 5, \"b\": 0}}"`
+	IP          *string `json:"ip,omitempty" example:"192.168.1.1"`
+	URL         *string `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
+	Method      *string `json:"method,omitempty" example:"POST"`
+	Headers     *string `json:"headers,omitempty" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
 	QueryParams *string `json:"query_params,omitempty" example:"{\"page\": 1, \"limit\": 10}"`
-	// @description Request body parameters (JSON-encoded) (optional)
-	BodyParams *string `json:"body_params,omitempty" example:"{\"a\": 5, \"b\": 0}"`
-	// @description Cookies (JSON-encoded) (optional)
-	Cookies *string `json:"cookies,omitempty" example:"{\"sessionId\": \"abc123\", \"theme\": \"dark\"}"`
-	// @description Session data (JSON-encoded) (optional)
-	Session *string `json:"session,omitempty" example:"{\"userId\": 123, \"role\": \"admin\"}"`
-	// @description Uploaded files info (JSON-encoded) (optional)
-	Files *string `json:"files,omitempty" example:"{\"avatar\": \"avatar.jpg\", \"size\": 1024}"`
-	// @description Environment variables (JSON-encoded) (optional)
-	Env *string `json:"env,omitempty" example:"{\"APP_ENV\": \"production\", \"DB_HOST\": \"db.example.com\"}"`
-	// @description Project ID (internal use, not exposed in JSON)
-	ProjectID string `json:"-"`
+	BodyParams  *string `json:"body_params,omitempty" example:"{\"a\": 5, \"b\": 0}"`
+	Cookies     *string `json:"cookies,omitempty" example:"{\"sessionId\": \"abc123\", \"theme\": \"dark\"}"`
+	Session     *string `json:"session,omitempty" example:"{\"userId\": 123, \"role\": \"admin\"}"`
+	Files       *string `json:"files,omitempty" example:"{\"avatar\": \"avatar.jpg\", \"size\": 1024}"`
+	Env         *string `json:"env,omitempty" example:"{\"APP_ENV\": \"production\", \"DB_HOST\": \"db.example.com\"}"`
+	ProjectID   string  `json:"-"`
 }
 
 type Update struct {
