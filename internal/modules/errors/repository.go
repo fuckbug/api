@@ -173,8 +173,10 @@ func (r *repository) Create(ctx context.Context, e *Error) error {
 	}
 
 	defer func() {
-		if err := tx.Rollback(); err != nil {
-			r.logger.Warn(fmt.Sprintf("failed to rollback transaction: %v", err))
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				r.logger.Warn(fmt.Sprintf("failed to rollback transaction: %v", rbErr))
+			}
 		}
 	}()
 
@@ -222,7 +224,7 @@ func (r *repository) Create(ctx context.Context, e *Error) error {
 	e.CreatedAt = now
 	e.UpdatedAt = now
 
-	_, err = r.db.NamedExecContext(ctx, query, e)
+	_, err = tx.NamedExecContext(ctx, query, e)
 	if err != nil {
 		return fmt.Errorf("failed to create error: %w", err)
 	}

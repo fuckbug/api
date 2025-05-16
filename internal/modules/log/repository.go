@@ -162,8 +162,10 @@ func (r *repository) Create(ctx context.Context, l *Log) error {
 	}
 
 	defer func() {
-		if err := tx.Rollback(); err != nil {
-			r.logger.Warn(fmt.Sprintf("failed to rollback transaction: %v", err))
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil && !errors.Is(rbErr, sql.ErrTxDone) {
+				r.logger.Warn(fmt.Sprintf("failed to rollback transaction: %v", rbErr))
+			}
 		}
 	}()
 
@@ -206,7 +208,7 @@ func (r *repository) Create(ctx context.Context, l *Log) error {
 	l.CreatedAt = now
 	l.UpdatedAt = now
 
-	_, err = r.db.NamedExecContext(ctx, query, l)
+	_, err = tx.NamedExecContext(ctx, query, l)
 	if err != nil {
 		return fmt.Errorf("failed to create log: %w", err)
 	}
