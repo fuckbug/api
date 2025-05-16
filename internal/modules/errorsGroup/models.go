@@ -8,10 +8,10 @@ type Logger interface {
 }
 
 type FilterParams struct {
-	ProjectID   string
-	TimeFrom    int
-	TimeTo      int
-	SearchQuery string
+	ProjectID string
+	TimeFrom  int64
+	TimeTo    int64
+	Search    string
 }
 
 type GetAllParams struct {
@@ -26,8 +26,8 @@ type Entity struct {
 	Message     string `json:"message" validate:"required" example:"Error message"`
 	File        string `json:"file" validate:"required" example:"index.php"`
 	Line        int    `json:"line" validate:"required" example:"1"`
-	FirstSeenAt int    `json:"firstSeenAt" example:"1704067200"`
-	LastSeenAt  int    `json:"lastSeenAt" example:"1704067200"`
+	FirstSeenAt int64  `json:"firstSeenAt" example:"1704067200"`
+	LastSeenAt  int64  `json:"lastSeenAt" example:"1704067200"`
 	Counter     int    `json:"counter" example:"18"`
 }
 

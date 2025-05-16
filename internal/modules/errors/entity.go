@@ -9,8 +9,8 @@ type Error struct {
 	File        string  `db:"file"`
 	Line        int     `db:"line"`
 	Context     *string `db:"context"`
-	Ip          *string `db:"ip"`
-	Url         *string `db:"url"`
+	IP          *string `db:"ip"`
+	URL         *string `db:"url"`
 	Method      *string `db:"method"`
 	Headers     *string `db:"headers"`
 	QueryParams *string `db:"query_params"`

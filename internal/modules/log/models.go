@@ -10,10 +10,10 @@ type Logger interface {
 type FilterParams struct {
 	ProjectID   string
 	Fingerprint string
-	TimeFrom    int
-	TimeTo      int
-	LevelFilter string
-	SearchQuery string
+	TimeFrom    int64
+	TimeTo      int64
+	Level       string
+	Search      string
 }
 
 type GetAllParams struct {
@@ -48,4 +48,10 @@ type Entity struct {
 type EntityList struct {
 	Count int      `json:"count"`
 	Items []Entity `json:"items"`
+}
+
+type Stats struct {
+	Last24h int
+	Last7d  int
+	Last30d int
 }

@@ -6,8 +6,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"github.com/fuckbug/api/pkg/pointers"
 
+	"github.com/fuckbug/api/pkg/utils"
 	"github.com/google/uuid"
 )
 
@@ -16,6 +16,7 @@ var ErrInvalidLogLevel = errors.New("invalid log level")
 type Service interface {
 	GetByID(ctx context.Context, id string) (*Entity, error)
 	GetAll(ctx context.Context, params GetAllParams) ([]*Entity, int, error)
+	GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error)
 	Create(ctx context.Context, req *Create) (*Entity, error)
 	Update(ctx context.Context, id string, req *Update) (*Entity, error)
 	Delete(ctx context.Context, id string) error
@@ -59,6 +60,15 @@ func (s *service) GetAll(ctx context.Context, params GetAllParams) ([]*Entity, i
 	return responses, total, nil
 }
 
+func (s *service) GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error) {
+	stats, err := s.repo.GetStats(ctx, projectID, fingerprint)
+	if err != nil {
+		return nil, err
+	}
+
+	return stats, nil
+}
+
 func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 	if !isValidLogLevel(req.Level) {
 		return nil, ErrInvalidLogLevel
@@ -97,7 +107,7 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Message != "" {
 		log.Message = req.Message
 	}
-	if pointers.DerefString(req.Context) != "" {
+	if utils.DerefString(req.Context) != "" {
 		log.Context = req.Context
 	}
 

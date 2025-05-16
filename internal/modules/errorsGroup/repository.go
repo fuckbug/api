@@ -118,9 +118,9 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 		args["timeTo"] = params.TimeTo
 	}
 
-	if params.SearchQuery != "" {
+	if params.Search != "" {
 		query += " AND message LIKE :search"
-		args["search"] = "%" + params.SearchQuery + "%"
+		args["search"] = "%" + params.Search + "%"
 	}
 
 	return query, args

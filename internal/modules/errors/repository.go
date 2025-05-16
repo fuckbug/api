@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -16,6 +17,7 @@ var ErrNotFound = errors.New("not found")
 type Repository interface {
 	GetAll(ctx context.Context, params GetAllParams) ([]*Error, error)
 	Count(ctx context.Context, params FilterParams) (int, error)
+	GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error)
 	GetByID(ctx context.Context, id string) (*Error, error)
 	Create(ctx context.Context, entity *Error) error
 	Update(ctx context.Context, id string, entity *Error) error
@@ -94,6 +96,54 @@ func (r *repository) Count(ctx context.Context, params FilterParams) (int, error
 	return count, nil
 }
 
+func (r *repository) GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error) {
+	query := `
+        SELECT
+            COUNT(*) FILTER (WHERE time >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '24 HOURS') * 1000)) AS last_24h,
+            COUNT(*) FILTER (WHERE time >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '7 DAYS') * 1000)) AS last_7d,
+			COUNT(*) FILTER (WHERE time >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '30 DAYS') * 1000)) AS last_30d
+        FROM
+            errors
+        WHERE
+            project_id = :projectId
+    `
+
+	args := map[string]interface{}{
+		"projectId": projectID,
+	}
+
+	if fingerprint != "" {
+		query += " AND fingerprint = :fingerprint"
+		args["fingerprint"] = fingerprint
+	}
+
+	query, namedArgs, err := sqlx.Named(query, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare named query: %w", err)
+	}
+
+	query = r.db.Rebind(query)
+
+	r.logger.Debug(query)
+
+	var stats struct {
+		Last24h int `db:"last_24h"`
+		Last7d  int `db:"last_7d"`
+		Last30d int `db:"last_30d"`
+	}
+
+	err = r.db.GetContext(ctx, &stats, query, namedArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Stats{
+		Last24h: stats.Last24h,
+		Last7d:  stats.Last7d,
+		Last30d: stats.Last30d,
+	}, nil
+}
+
 func (r *repository) GetByID(ctx context.Context, id string) (*Error, error) {
 	const query = `
 		SELECT
@@ -136,22 +186,16 @@ func (r *repository) Create(ctx context.Context, e *Error) error {
     `
 
 	now := time.Now().Unix()
-	errorGroup := struct {
-		ID          string `db:"id"`
-		ProjectID   string `db:"project_id"`
-		File        string `db:"file"`
-		Line        int    `db:"line"`
-		Message     string `db:"message"`
-		FirstSeenAt int    `db:"first_seen_at"`
-		LastSeenAt  int    `db:"last_seen_at"`
-	}{
+	errorGroup := errorsGroup.Group{
 		ID:          e.Fingerprint,
 		ProjectID:   e.ProjectID,
 		File:        e.File,
 		Line:        e.Line,
 		Message:     e.Message,
-		FirstSeenAt: int(now),
-		LastSeenAt:  int(now),
+		FirstSeenAt: now,
+		LastSeenAt:  now,
+		Counter:     0,
+		Status:      errorsGroup.StatusUnresolved,
 	}
 
 	_, err = tx.NamedExecContext(ctx, errorGroupQuery, errorGroup)
@@ -190,7 +234,9 @@ func (r *repository) Create(ctx context.Context, e *Error) error {
 }
 
 func (r *repository) Update(ctx context.Context, id string, updated *Error) error {
-	const query = `UPDATE errors 
+	const query = `
+		UPDATE
+			errors 
 		SET 
 		    fingerprint = :fingerprint,
 		    message = :message,
@@ -200,7 +246,9 @@ func (r *repository) Update(ctx context.Context, id string, updated *Error) erro
 		    context = :context,
 		    time = :time,
 		    updated_at = :updated_at
-		WHERE id = :id`
+		WHERE
+		    id = :id
+	`
 
 	updated.ID = id
 	updated.UpdatedAt = time.Now().UnixMilli()
@@ -261,9 +309,9 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 		args["timeTo"] = params.TimeTo
 	}
 
-	if params.SearchQuery != "" {
+	if params.Search != "" {
 		query += " AND message LIKE :search"
-		args["search"] = "%" + params.SearchQuery + "%"
+		args["search"] = "%" + params.Search + "%"
 	}
 
 	return query, args

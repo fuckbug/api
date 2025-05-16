@@ -6,7 +6,7 @@ import (
 
 	"github.com/fuckbug/api/internal/modules/errors"
 	"github.com/fuckbug/api/pkg/httputils"
-
+	"github.com/fuckbug/api/pkg/utils"
 	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
@@ -32,6 +32,7 @@ func RegisterErrorHandlers(
 
 	routerV1 := r.PathPrefix("/v1/errors").Subrouter()
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
+	routerV1.HandleFunc("/stats", h.GetStats).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
 	routerV1.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
@@ -67,8 +68,8 @@ func (h *errorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Summary Get all errors
 // @Description Retrieves a list of all errors from the system
 // @Tags errors
-// @Accept  json
-// @Produce  json
+// @Accept json
+// @Produce json
 // @Param projectId query string false "Project ID"
 // @Param groupId query string false "Group ID"
 // @Param timeFrom query int false "Time errors from"
@@ -95,12 +96,12 @@ func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	projectID := queryParams.Get("projectId")
 	groupID := queryParams.Get("groupId")
 
-	timeFrom, err := strconv.Atoi(queryParams.Get("timeFrom"))
+	timeFrom, err := utils.ParseTimeParam(queryParams.Get("timeFrom"))
 	if err != nil {
 		timeFrom = 0
 	}
 
-	timeTo, err := strconv.Atoi(queryParams.Get("timeTo"))
+	timeTo, err := utils.ParseTimeParam(queryParams.Get("timeTo"))
 	if err != nil {
 		timeTo = 0
 	}
@@ -110,15 +111,15 @@ func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		sortOrder = httputils.DefaultSort
 	}
 
-	searchQuery := queryParams.Get("search")
+	search := queryParams.Get("search")
 
 	params := errors.GetAllParams{
 		FilterParams: errors.FilterParams{
 			ProjectID:   projectID,
 			Fingerprint: groupID,
-			TimeFrom:    timeFrom,
-			TimeTo:      timeTo,
-			SearchQuery: searchQuery,
+			TimeFrom:    utils.SecondsToMilliseconds(timeFrom),
+			TimeTo:      utils.SecondsToMilliseconds(timeTo),
+			Search:      search,
 		},
 		SortOrder: sortOrder,
 		Limit:     limit,
@@ -132,6 +133,31 @@ func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httputils.RespondWithJSON(w, http.StatusOK, httputils.NewListResponse(totalCount, entities))
+}
+
+// GetStats godoc
+// @Summary Get errors stats
+// @Description Retrieves a stats of all errors from the system
+// @Tags errors
+// @Accept json
+// @Produce json
+// @Param projectId query string false "Project ID"
+// @Param groupId query string false "Group ID"
+// @Success 200 {object} errors.Stats "Successfully retrieved stats of errors"
+// @Router /v1/errors/stats [get].
+func (h *errorHandler) GetStats(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+
+	projectID := queryParams.Get("projectId")
+	groupID := queryParams.Get("groupId")
+
+	stats, err := h.service.GetStats(r.Context(), projectID, groupID)
+	if err != nil {
+		httputils.RespondWithPlainError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	httputils.RespondWithJSON(w, http.StatusOK, stats)
 }
 
 // Create godoc

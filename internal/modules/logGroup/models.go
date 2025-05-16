@@ -8,11 +8,11 @@ type Logger interface {
 }
 
 type FilterParams struct {
-	ProjectID   string
-	TimeFrom    int
-	TimeTo      int
-	LevelFilter string
-	SearchQuery string
+	ProjectID string
+	TimeFrom  int64
+	TimeTo    int64
+	Level     string
+	Search    string
 }
 
 type GetAllParams struct {
@@ -26,8 +26,8 @@ type Entity struct {
 	ID          string `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
 	Level       string `json:"level" example:"INFO"`
 	Message     string `json:"message" validate:"required" example:"Log message"`
-	FirstSeenAt int    `json:"firstSeenAt" example:"1704067200"`
-	LastSeenAt  int    `json:"lastSeenAt" example:"1704067200"`
+	FirstSeenAt int64  `json:"firstSeenAt" example:"1704067200"`
+	LastSeenAt  int64  `json:"lastSeenAt" example:"1704067200"`
 	Counter     int    `json:"counter" example:"18"`
 }
 

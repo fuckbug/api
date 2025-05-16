@@ -10,9 +10,9 @@ type Logger interface {
 type FilterParams struct {
 	ProjectID   string
 	Fingerprint string
-	TimeFrom    int
-	TimeTo      int
-	SearchQuery string
+	TimeFrom    int64
+	TimeTo      int64
+	Search      string
 }
 
 type GetAllParams struct {
@@ -36,9 +36,9 @@ type Create struct {
 	// @description Additional error context (JSON-encoded)
 	Context *string `json:"context" example:"{\"userId\": 123, \"action\": \"calculate\", \"input\": {\"a\": 5, \"b\": 0}}"`
 	// @description IP address of the client (optional)
-	Ip *string `json:"ip,omitempty" example:"192.168.1.1"`
+	IP *string `json:"ip,omitempty" example:"192.168.1.1"`
 	// @description URL where the error occurred (optional)
-	Url *string `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
+	URL *string `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
 	// @description HTTP method (GET, POST, etc.) (optional)
 	Method *string `json:"method,omitempty" example:"POST"`
 	// @description HTTP headers (JSON-encoded) (optional)
@@ -74,8 +74,8 @@ type Entity struct {
 	File        string  `json:"file" validate:"required" example:"/var/www/index.php"`
 	Line        int     `json:"line" validate:"required" example:"15"`
 	Context     *string `json:"context" example:"{\"userId\": 123, \"action\": \"calculate\"}"`
-	Ip          *string `json:"ip" example:"192.168.1.1"`
-	Url         *string `json:"url" example:"https://example.com/api/v1/calculate"`
+	IP          *string `json:"ip" example:"192.168.1.1"`
+	URL         *string `json:"url" example:"https://example.com/api/v1/calculate"`
 	Method      *string `json:"method" example:"POST"`
 	Headers     *string `json:"headers" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
 	QueryParams *string `json:"query_params" example:"{\"page\": 1, \"limit\": 10}"`
@@ -90,4 +90,10 @@ type Entity struct {
 type EntityList struct {
 	Count int      `json:"count"`
 	Items []Entity `json:"items"`
+}
+
+type Stats struct {
+	Last24h int
+	Last7d  int
+	Last30d int
 }

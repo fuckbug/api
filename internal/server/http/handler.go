@@ -7,6 +7,7 @@ import (
 	"github.com/fuckbug/api/internal/modules/errors"
 	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
 	"github.com/fuckbug/api/internal/modules/log"
+	logGroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
 	"github.com/gorilla/mux"
@@ -17,6 +18,7 @@ func NewHandler(
 	logger handlers.Logger,
 	appService app.Service,
 	logService log.Service,
+	logGroupService logGroup.Service,
 	errorService errors.Service,
 	errorGroupService errorsGroup.Service,
 	projectService project.Service,
@@ -29,6 +31,7 @@ func NewHandler(
 
 	handlers.RegisterAppHandlers(r, logger, appService)
 	handlers.RegisterLogHandlers(r, logger, logService)
+	handlers.RegisterLogGroupHandlers(r, logger, logGroupService)
 	handlers.RegisterErrorHandlers(r, logger, errorService)
 	handlers.RegisterErrorGroupHandlers(r, logger, errorGroupService)
 	handlers.RegisterProjectHandlers(r, logger, projectService)

@@ -20,6 +20,7 @@ import (
 	moduleError "github.com/fuckbug/api/internal/modules/errors"
 	moduleGroupError "github.com/fuckbug/api/internal/modules/errorsGroup"
 	moduleLog "github.com/fuckbug/api/internal/modules/log"
+	moduleGroupLog "github.com/fuckbug/api/internal/modules/logGroup"
 	moduleProject "github.com/fuckbug/api/internal/modules/project"
 	server "github.com/fuckbug/api/internal/server/http"
 )
@@ -72,6 +73,7 @@ func main() {
 
 	appService := app.New(appLogger)
 	logService := moduleLog.NewService(moduleLog.NewRepository(db, appLogger), appLogger)
+	logGroupService := moduleGroupLog.NewService(moduleGroupLog.NewRepository(db, appLogger), appLogger)
 	errorService := moduleError.NewService(moduleError.NewRepository(db, appLogger), appLogger)
 	errorGroupService := moduleGroupError.NewService(moduleGroupError.NewRepository(db, appLogger), appLogger)
 	projectService := moduleProject.NewService(moduleProject.NewRepository(db, appLogger), appLogger, config.Domain)
@@ -80,6 +82,7 @@ func main() {
 		appLogger,
 		appService,
 		logService,
+		logGroupService,
 		errorService,
 		errorGroupService,
 		projectService,

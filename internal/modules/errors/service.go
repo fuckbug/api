@@ -5,13 +5,15 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/fuckbug/api/pkg/pointers"
+
+	"github.com/fuckbug/api/pkg/utils"
 	"github.com/google/uuid"
 )
 
 type Service interface {
 	GetByID(ctx context.Context, id string) (*Entity, error)
 	GetAll(ctx context.Context, params GetAllParams) ([]*Entity, int, error)
+	GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error)
 	Create(ctx context.Context, req *Create) (*Entity, error)
 	Update(ctx context.Context, id string, req *Update) (*Entity, error)
 	Delete(ctx context.Context, id string) error
@@ -55,6 +57,15 @@ func (s *service) GetAll(ctx context.Context, params GetAllParams) ([]*Entity, i
 	return responses, total, nil
 }
 
+func (s *service) GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error) {
+	stats, err := s.repo.GetStats(ctx, projectID, fingerprint)
+	if err != nil {
+		return nil, err
+	}
+
+	return stats, nil
+}
+
 func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 	entity := &Error{
 		ID:          uuid.New().String(),
@@ -64,8 +75,8 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		File:        req.File,
 		Line:        req.Line,
 		Context:     req.Context,
-		Ip:          req.Ip,
-		Url:         req.Url,
+		IP:          req.IP,
+		URL:         req.URL,
 		Method:      req.Method,
 		Headers:     req.Headers,
 		QueryParams: req.QueryParams,
@@ -104,7 +115,7 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Line != 0 {
 		entity.Line = req.Line
 	}
-	if pointers.DerefString(req.Context) != "" {
+	if utils.DerefString(req.Context) != "" {
 		entity.Context = req.Context
 	}
 
@@ -140,8 +151,8 @@ func toResponse(e *Error) *Entity {
 		File:        e.File,
 		Line:        e.Line,
 		Context:     e.Context,
-		Ip:          e.Ip,
-		Url:         e.Url,
+		IP:          e.IP,
+		URL:         e.URL,
 		Method:      e.Method,
 		Headers:     e.Headers,
 		QueryParams: e.QueryParams,

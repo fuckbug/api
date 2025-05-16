@@ -4,45 +4,45 @@ import (
 	"net/http"
 	"strconv"
 
-	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
+	logGroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/fuckbug/api/pkg/httputils"
 	"github.com/fuckbug/api/pkg/utils"
 	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
-type errorGroupHandler struct {
+type logGroupHandler struct {
 	logger   Logger
 	validate *v.Validate
-	service  errorsGroup.Service
+	service  logGroup.Service
 }
 
-func RegisterErrorGroupHandlers(
+func RegisterLogGroupHandlers(
 	r *mux.Router,
 	logger Logger,
-	service errorsGroup.Service,
+	service logGroup.Service,
 ) {
-	h := &errorGroupHandler{
+	h := &logGroupHandler{
 		logger:   logger,
 		validate: v.New(),
 		service:  service,
 	}
 
-	routerV1 := r.PathPrefix("/v1/error-groups").Subrouter()
+	routerV1 := r.PathPrefix("/v1/log-groups").Subrouter()
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
 }
 
 // GetByID godoc
-// @Summary Get an error group by ID
-// @Description Get an error group by ID
-// @Tags error-groups
+// @Summary Get a log group by ID
+// @Description Get a log group by ID
+// @Tags log-groups
 // @Accept json
 // @Produce json
-// @Success 200 {object} errorsgroup.Entity
-// @Param id path string true "Error ID"
-// @Router /v1/error-groups/{id} [get].
-func (h *errorGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+// @Success 200 {object} loggroup.Entity
+// @Param id path string true "Log ID"
+// @Router /v1/log-groups/{id} [get].
+func (h *logGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
 	if id == "" {
@@ -60,21 +60,22 @@ func (h *errorGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetAll godoc
-// @Summary Get all error groups
-// @Description Retrieves a list of all errors from the system
-// @Tags error-groups
+// @Summary Get all log groups
+// @Description Retrieves a list of all logs from the system
+// @Tags log-groups
 // @Accept  json
 // @Produce  json
 // @Param projectId query string false "Project ID"
-// @Param timeFrom query int false "Time errors from"
-// @Param timeTo query int false "Time errors to"
+// @Param timeFrom query int false "Time logs from"
+// @Param timeTo query int false "Time logs to"
+// @Param level query string false "Filter by log level" Enums(DEBUG, INFO, WARN, ERROR)
 // @Param search query string false "Search in message field"
 // @Param sort query string false "Sort order (asc or desc)" default(desc) Enums(asc, desc)
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
-// @Success 200 {object} errorsgroup.EntityList "Successfully retrieved list of errors"
-// @Router /v1/error-groups [get].
-func (h *errorGroupHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+// @Success 200 {object} loggroup.EntityList "Successfully retrieved list of logs"
+// @Router /v1/log-groups [get].
+func (h *logGroupHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 
 	limit, err := strconv.Atoi(queryParams.Get("limit"))
@@ -104,13 +105,15 @@ func (h *errorGroupHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		sortOrder = httputils.DefaultSort
 	}
 
+	level := queryParams.Get("level")
 	search := queryParams.Get("search")
 
-	params := errorsGroup.GetAllParams{
-		FilterParams: errorsGroup.FilterParams{
+	params := logGroup.GetAllParams{
+		FilterParams: logGroup.FilterParams{
 			ProjectID: projectID,
 			TimeFrom:  timeFrom,
 			TimeTo:    timeTo,
+			Level:     level,
 			Search:    search,
 		},
 		SortOrder: sortOrder,

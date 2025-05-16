@@ -6,7 +6,7 @@ import (
 
 	"github.com/fuckbug/api/internal/modules/log"
 	"github.com/fuckbug/api/pkg/httputils"
-
+	"github.com/fuckbug/api/pkg/utils"
 	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
@@ -32,6 +32,7 @@ func RegisterLogHandlers(
 
 	routerV1 := r.PathPrefix("/v1/logs").Subrouter()
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
+	routerV1.HandleFunc("/stats", h.GetStats).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
 	routerV1.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
@@ -96,12 +97,12 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	projectID := queryParams.Get("projectId")
 	groupID := queryParams.Get("groupId")
 
-	timeFrom, err := strconv.Atoi(queryParams.Get("timeFrom"))
+	timeFrom, err := utils.ParseTimeParam(queryParams.Get("timeFrom"))
 	if err != nil {
 		timeFrom = 0
 	}
 
-	timeTo, err := strconv.Atoi(queryParams.Get("timeTo"))
+	timeTo, err := utils.ParseTimeParam(queryParams.Get("timeTo"))
 	if err != nil {
 		timeTo = 0
 	}
@@ -111,8 +112,8 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		sortOrder = httputils.DefaultSort
 	}
 
-	levelFilter := queryParams.Get("level")
-	searchQuery := queryParams.Get("search")
+	level := queryParams.Get("level")
+	search := queryParams.Get("search")
 
 	params := log.GetAllParams{
 		FilterParams: log.FilterParams{
@@ -120,8 +121,8 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 			Fingerprint: groupID,
 			TimeFrom:    timeFrom,
 			TimeTo:      timeTo,
-			LevelFilter: levelFilter,
-			SearchQuery: searchQuery,
+			Level:       level,
+			Search:      search,
 		},
 		SortOrder: sortOrder,
 		Limit:     limit,
@@ -135,6 +136,31 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	}
 
 	httputils.RespondWithJSON(w, http.StatusOK, httputils.NewListResponse(totalCount, logs))
+}
+
+// GetStats godoc
+// @Summary Get logs stats
+// @Description Retrieves a stats of all logs from the system
+// @Tags logs
+// @Accept  json
+// @Produce  json
+// @Param projectId query string false "Project ID"
+// @Param groupId query string false "Group ID"
+// @Success 200 {object} log.Stats "Successfully retrieved stats of logs"
+// @Router /v1/logs/stats [get].
+func (h *logHandler) GetStats(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+
+	projectID := queryParams.Get("projectId")
+	groupID := queryParams.Get("groupId")
+
+	stats, err := h.service.GetStats(r.Context(), projectID, groupID)
+	if err != nil {
+		httputils.RespondWithPlainError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	httputils.RespondWithJSON(w, http.StatusOK, stats)
 }
 
 // Create godoc

@@ -14,8 +14,8 @@ type Group struct {
 	File        string `db:"file"`
 	Line        int    `db:"line"`
 	Message     string `db:"message"`
-	FirstSeenAt int    `db:"first_seen_at"`
-	LastSeenAt  int    `db:"last_seen_at"`
+	FirstSeenAt int64  `db:"first_seen_at"`
+	LastSeenAt  int64  `db:"last_seen_at"`
 	Counter     int    `db:"counter"`
 	Status      Status `db:"status"`
 }

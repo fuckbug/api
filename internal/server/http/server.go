@@ -11,6 +11,7 @@ import (
 	"github.com/fuckbug/api/internal/modules/errors"
 	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
 	"github.com/fuckbug/api/internal/modules/log"
+	logGroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/internal/server/http/handlers"
 )
@@ -29,6 +30,7 @@ func New(
 	logger handlers.Logger,
 	appService app.Service,
 	logService log.Service,
+	logGroupService logGroup.Service,
 	errorService errors.Service,
 	errorGroupService errorsGroup.Service,
 	projectService project.Service,
@@ -39,6 +41,7 @@ func New(
 		logger,
 		appService,
 		logService,
+		logGroupService,
 		errorService,
 		errorGroupService,
 		projectService,

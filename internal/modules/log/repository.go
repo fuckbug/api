@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	loggroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"time"
 
+	loggroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -17,6 +17,7 @@ var ErrNotFound = errors.New("not found")
 type Repository interface {
 	GetAll(ctx context.Context, params GetAllParams) ([]*Log, error)
 	Count(ctx context.Context, params FilterParams) (int, error)
+	GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error)
 	GetByID(ctx context.Context, id string) (*Log, error)
 	Create(ctx context.Context, log *Log) error
 	Update(ctx context.Context, id string, log *Log) error
@@ -91,6 +92,54 @@ func (r *repository) Count(ctx context.Context, params FilterParams) (int, error
 	return count, nil
 }
 
+func (r *repository) GetStats(ctx context.Context, projectID string, fingerprint string) (*Stats, error) {
+	query := `
+        SELECT
+            COUNT(*) FILTER (WHERE time >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '24 HOURS') * 1000)) AS last_24h,
+            COUNT(*) FILTER (WHERE time >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '7 DAYS') * 1000)) AS last_7d,
+			COUNT(*) FILTER (WHERE time >= (EXTRACT(EPOCH FROM NOW() - INTERVAL '30 DAYS') * 1000)) AS last_30d
+        FROM
+            logs
+        WHERE
+            project_id = :projectId
+    `
+
+	args := map[string]interface{}{
+		"projectId": projectID,
+	}
+
+	if fingerprint != "" {
+		query += " AND fingerprint = :fingerprint"
+		args["fingerprint"] = fingerprint
+	}
+
+	query, namedArgs, err := sqlx.Named(query, args)
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare named query: %w", err)
+	}
+
+	query = r.db.Rebind(query)
+
+	r.logger.Debug(query)
+
+	var stats struct {
+		Last24h int `db:"last_24h"`
+		Last7d  int `db:"last_7d"`
+		Last30d int `db:"last_30d"`
+	}
+
+	err = r.db.GetContext(ctx, &stats, query, namedArgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Stats{
+		Last24h: stats.Last24h,
+		Last7d:  stats.Last7d,
+		Last30d: stats.Last30d,
+	}, nil
+}
+
 func (r *repository) GetByID(ctx context.Context, id string) (*Log, error) {
 	const query = `SELECT id, level, message, context, time, created_at, updated_at 
 		FROM logs WHERE id = $1`
@@ -107,7 +156,6 @@ func (r *repository) GetByID(ctx context.Context, id string) (*Log, error) {
 }
 
 func (r *repository) Create(ctx context.Context, l *Log) error {
-
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
@@ -132,8 +180,8 @@ func (r *repository) Create(ctx context.Context, l *Log) error {
 		ProjectID:   l.ProjectID,
 		Level:       loggroup.Level(l.Level),
 		Message:     l.Message,
-		FirstSeenAt: int(now),
-		LastSeenAt:  int(now),
+		FirstSeenAt: now,
+		LastSeenAt:  now,
 		Counter:     0,
 		Status:      loggroup.StatusUnresolved,
 	}
@@ -243,14 +291,14 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 		args["timeTo"] = params.TimeTo
 	}
 
-	if params.LevelFilter != "" {
+	if params.Level != "" {
 		query += " AND level = :level"
-		args["level"] = params.LevelFilter
+		args["level"] = params.Level
 	}
 
-	if params.SearchQuery != "" {
+	if params.Search != "" {
 		query += " AND message LIKE :search"
-		args["search"] = "%" + params.SearchQuery + "%"
+		args["search"] = "%" + params.Search + "%"
 	}
 
 	return query, args
