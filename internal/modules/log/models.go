@@ -51,7 +51,7 @@ type EntityList struct {
 }
 
 type Stats struct {
-	Last24h int
-	Last7d  int
-	Last30d int
+	Last24h int `json:"last24h"`
+	Last7d  int `json:"last7d"`
+	Last30d int `json:"last30d"`
 }

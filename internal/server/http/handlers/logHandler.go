@@ -144,7 +144,7 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Tags logs
 // @Accept  json
 // @Produce  json
-// @Param projectId query string false "Project ID"
+// @Param projectId query string true "Project ID"
 // @Param groupId query string false "Group ID"
 // @Success 200 {object} log.Stats "Successfully retrieved stats of logs"
 // @Router /v1/logs/stats [get].
