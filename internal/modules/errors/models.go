@@ -33,8 +33,8 @@ type Create struct {
 	URL         *string `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
 	Method      *string `json:"method,omitempty" example:"POST"`
 	Headers     *string `json:"headers,omitempty" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
-	QueryParams *string `json:"query_params,omitempty" example:"{\"page\": 1, \"limit\": 10}"`
-	BodyParams  *string `json:"body_params,omitempty" example:"{\"a\": 5, \"b\": 0}"`
+	QueryParams *string `json:"queryParams,omitempty" example:"{\"page\": 1, \"limit\": 10}"`
+	BodyParams  *string `json:"bodyParams,omitempty" example:"{\"a\": 5, \"b\": 0}"`
 	Cookies     *string `json:"cookies,omitempty" example:"{\"sessionId\": \"abc123\", \"theme\": \"dark\"}"`
 	Session     *string `json:"session,omitempty" example:"{\"userId\": 123, \"role\": \"admin\"}"`
 	Files       *string `json:"files,omitempty" example:"{\"avatar\": \"avatar.jpg\", \"size\": 1024}"`
@@ -61,8 +61,8 @@ type Entity struct {
 	URL         *string `json:"url" example:"https://example.com/api/v1/calculate"`
 	Method      *string `json:"method" example:"POST"`
 	Headers     *string `json:"headers" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
-	QueryParams *string `json:"query_params" example:"{\"page\": 1, \"limit\": 10}"`
-	BodyParams  *string `json:"body_params" example:"{\"a\": 5, \"b\": 0}"`
+	QueryParams *string `json:"queryParams" example:"{\"page\": 1, \"limit\": 10}"`
+	BodyParams  *string `json:"bodyParams" example:"{\"a\": 5, \"b\": 0}"`
 	Cookies     *string `json:"cookies" example:"{\"sessionId\": \"abc123\", \"theme\": \"dark\"}"`
 	Session     *string `json:"session" example:"{\"userId\": 123, \"role\": \"admin\"}"`
 	Files       *string `json:"files" example:"{\"avatar\": \"avatar.jpg\", \"size\": 1024}"`
