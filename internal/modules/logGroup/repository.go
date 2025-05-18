@@ -109,12 +109,12 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 	}
 
 	if params.TimeFrom != 0 {
-		query += " AND first_seen_at >= :timeFrom"
+		query += " AND last_seen_at >= :timeFrom"
 		args["timeFrom"] = params.TimeFrom
 	}
 
 	if params.TimeTo != 0 {
-		query += " AND first_seen_at <= :timeTo"
+		query += " AND last_seen_at <= :timeTo"
 		args["timeTo"] = params.TimeTo
 	}
 
