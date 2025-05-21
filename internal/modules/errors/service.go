@@ -162,35 +162,35 @@ func toResponse(e *Error) *Entity {
 	}
 
 	if err := parseJSONField(e.Context, &response.Context); err != nil {
-		return nil
+		response.Context = nil
 	}
 
 	if err := parseJSONField(e.Headers, &response.Headers); err != nil {
-		return nil
+		response.Headers = nil
 	}
 
 	if err := parseJSONField(e.QueryParams, &response.QueryParams); err != nil {
-		return nil
+		response.QueryParams = nil
 	}
 
 	if err := parseJSONField(e.BodyParams, &response.BodyParams); err != nil {
-		return nil
+		response.BodyParams = nil
 	}
 
 	if err := parseJSONField(e.Cookies, &response.Cookies); err != nil {
-		return nil
+		response.Cookies = nil
 	}
 
 	if err := parseJSONField(e.Session, &response.Session); err != nil {
-		return nil
+		response.Session = nil
 	}
 
 	if err := parseJSONField(e.Files, &response.Files); err != nil {
-		return nil
+		response.Files = nil
 	}
 
 	if err := parseJSONField(e.Env, &response.Env); err != nil {
-		return nil
+		response.Env = nil
 	}
 
 	return response
