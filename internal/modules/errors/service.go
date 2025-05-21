@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"regexp"
 
@@ -148,23 +149,56 @@ func generateFingerprint(e *Error) string {
 }
 
 func toResponse(e *Error) *Entity {
-	return &Entity{
-		ID:          e.ID,
-		Message:     e.Message,
-		Stacktrace:  e.Stacktrace,
-		File:        e.File,
-		Line:        e.Line,
-		Context:     e.Context,
-		IP:          e.IP,
-		URL:         e.URL,
-		Method:      e.Method,
-		Headers:     e.Headers,
-		QueryParams: e.QueryParams,
-		BodyParams:  e.BodyParams,
-		Cookies:     e.Cookies,
-		Session:     e.Session,
-		Files:       e.Files,
-		Env:         e.Env,
-		Time:        e.Time,
+	response := &Entity{
+		ID:         e.ID,
+		Message:    e.Message,
+		Stacktrace: e.Stacktrace,
+		File:       e.File,
+		Line:       e.Line,
+		IP:         e.IP,
+		URL:        e.URL,
+		Method:     e.Method,
+		Time:       e.Time,
 	}
+
+	if err := parseJSONField(e.Context, &response.Context); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.Headers, &response.Headers); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.QueryParams, &response.QueryParams); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.BodyParams, &response.BodyParams); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.Cookies, &response.Cookies); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.Session, &response.Session); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.Files, &response.Files); err != nil {
+		return nil
+	}
+
+	if err := parseJSONField(e.Env, &response.Env); err != nil {
+		return nil
+	}
+
+	return response
+}
+
+func parseJSONField(src *string, dest interface{}) error {
+	if src == nil || *src == "" {
+		return nil
+	}
+	return json.Unmarshal([]byte(*src), dest)
 }

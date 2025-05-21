@@ -51,23 +51,23 @@ type Update struct {
 }
 
 type Entity struct {
-	ID          string  `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
-	Message     string  `json:"message" validate:"required" example:"Error: Division by zero"`
-	Stacktrace  string  `json:"stacktrace" validate:"required" example:"at index.php:15, at main()"`
-	File        string  `json:"file" validate:"required" example:"/var/www/index.php"`
-	Line        int     `json:"line" validate:"required" example:"15"`
-	Context     *string `json:"context" example:"{\"userId\": 123, \"action\": \"calculate\"}"`
-	IP          *string `json:"ip" example:"192.168.1.1"`
-	URL         *string `json:"url" example:"https://example.com/api/v1/calculate"`
-	Method      *string `json:"method" example:"POST"`
-	Headers     *string `json:"headers" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
-	QueryParams *string `json:"queryParams" example:"{\"page\": 1, \"limit\": 10}"`
-	BodyParams  *string `json:"bodyParams" example:"{\"a\": 5, \"b\": 0}"`
-	Cookies     *string `json:"cookies" example:"{\"sessionId\": \"abc123\", \"theme\": \"dark\"}"`
-	Session     *string `json:"session" example:"{\"userId\": 123, \"role\": \"admin\"}"`
-	Files       *string `json:"files" example:"{\"avatar\": \"avatar.jpg\", \"size\": 1024}"`
-	Env         *string `json:"env" example:"{\"APP_ENV\": \"production\", \"DB_HOST\": \"db.example.com\"}"`
-	Time        int64   `json:"time" example:"1704067200000"` // Unix timestamp in milliseconds
+	ID          string                  `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
+	Message     string                  `json:"message" validate:"required" example:"Error: Division by zero"`
+	Stacktrace  string                  `json:"stacktrace" validate:"required" example:"at index.php:15, at main()"`
+	File        string                  `json:"file" validate:"required" example:"/var/www/index.php"`
+	Line        int                     `json:"line" validate:"required" example:"15"`
+	Context     *map[string]interface{} `json:"context"`
+	IP          *string                 `json:"ip" example:"192.168.1.1"`
+	URL         *string                 `json:"url" example:"https://example.com/api/v1/calculate"`
+	Method      *string                 `json:"method" example:"POST"`
+	Headers     *map[string]interface{} `json:"headers"`
+	QueryParams *map[string]interface{} `json:"queryParams"`
+	BodyParams  *map[string]interface{} `json:"bodyParams"`
+	Cookies     *map[string]interface{} `json:"cookies"`
+	Session     *map[string]interface{} `json:"session"`
+	Files       *map[string]interface{} `json:"files"`
+	Env         *map[string]interface{} `json:"env"`
+	Time        int64                   `json:"time" example:"1704067200000"` // Unix timestamp in milliseconds
 }
 
 type EntityList struct {
