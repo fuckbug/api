@@ -162,35 +162,51 @@ func toResponse(e *Error) *Entity {
 	}
 
 	if err := parseJSONField(e.Context, &response.Context); err != nil {
-		response.Context = nil
+		*response.Context = map[string]interface{}{
+			"Context": e.Context,
+		}
 	}
 
 	if err := parseJSONField(e.Headers, &response.Headers); err != nil {
-		response.Headers = nil
+		*response.Headers = map[string]interface{}{
+			"Headers": e.Headers,
+		}
 	}
 
 	if err := parseJSONField(e.QueryParams, &response.QueryParams); err != nil {
-		response.QueryParams = nil
+		*response.QueryParams = map[string]interface{}{
+			"QueryParams": e.QueryParams,
+		}
 	}
 
 	if err := parseJSONField(e.BodyParams, &response.BodyParams); err != nil {
-		response.BodyParams = nil
+		*response.BodyParams = map[string]interface{}{
+			"BodyParams": e.BodyParams,
+		}
 	}
 
 	if err := parseJSONField(e.Cookies, &response.Cookies); err != nil {
-		response.Cookies = nil
+		*response.Cookies = map[string]interface{}{
+			"Cookies": e.Cookies,
+		}
 	}
 
 	if err := parseJSONField(e.Session, &response.Session); err != nil {
-		response.Session = nil
+		*response.Session = map[string]interface{}{
+			"Session": e.Session,
+		}
 	}
 
 	if err := parseJSONField(e.Files, &response.Files); err != nil {
-		response.Files = nil
+		*response.Files = map[string]interface{}{
+			"Files": e.Files,
+		}
 	}
 
 	if err := parseJSONField(e.Env, &response.Env); err != nil {
-		response.Env = nil
+		*response.Env = map[string]interface{}{
+			"Env": e.Env,
+		}
 	}
 
 	return response
