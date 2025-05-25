@@ -22,6 +22,7 @@ import (
 	moduleLog "github.com/fuckbug/api/internal/modules/log"
 	moduleGroupLog "github.com/fuckbug/api/internal/modules/logGroup"
 	moduleProject "github.com/fuckbug/api/internal/modules/project"
+	moduleUser "github.com/fuckbug/api/internal/modules/users"
 	server "github.com/fuckbug/api/internal/server/http"
 )
 
@@ -41,6 +42,10 @@ const serverShutdownTimeout = 3 * time.Second
 // @contact.email support@fuckbug.io
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer" followed by a space and JWT token.
 func main() {
 	flag.Parse()
 
@@ -71,7 +76,10 @@ func main() {
 		return
 	}
 
+	jwtKey := []byte("teststringjwt") // todo
+
 	appService := app.New(appLogger)
+	userService := moduleUser.NewService(moduleUser.NewRepository(db, appLogger), jwtKey, appLogger)
 	logService := moduleLog.NewService(moduleLog.NewRepository(db, appLogger), appLogger)
 	logGroupService := moduleGroupLog.NewService(moduleGroupLog.NewRepository(db, appLogger), appLogger)
 	errorService := moduleError.NewService(moduleError.NewRepository(db, appLogger), appLogger)
@@ -81,6 +89,7 @@ func main() {
 	s := server.New(
 		appLogger,
 		appService,
+		userService,
 		logService,
 		logGroupService,
 		errorService,
@@ -88,6 +97,7 @@ func main() {
 		projectService,
 		"",
 		config.Port,
+		jwtKey,
 	)
 
 	go func() {

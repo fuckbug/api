@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fuckbug/api/internal/middleware"
 	"github.com/fuckbug/api/internal/modules/errors"
 	"github.com/fuckbug/api/pkg/httputils"
 	"github.com/fuckbug/api/pkg/utils"
@@ -17,10 +18,11 @@ type errorHandler struct {
 	service  errors.Service
 }
 
-func RegisterErrorHandlers(
+func RegisterErrorHandlers( //nolint:dupl
 	r *mux.Router,
 	logger Logger,
 	service errors.Service,
+	jwtKey []byte,
 ) {
 	h := &errorHandler{
 		logger:   logger,
@@ -31,6 +33,8 @@ func RegisterErrorHandlers(
 	r.HandleFunc("/ingest/{projectID}:{key}/errors", h.Create).Methods(http.MethodPost)
 
 	routerV1 := r.PathPrefix("/v1/errors").Subrouter()
+	routerV1.Use(middleware.Auth(jwtKey))
+
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	routerV1.HandleFunc("/stats", h.GetStats).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
@@ -46,6 +50,7 @@ func RegisterErrorHandlers(
 // @Produce json
 // @Success 200 {object} errors.Entity
 // @Param id path string true "Error ID"
+// @Security BearerAuth
 // @Router /v1/errors/{id} [get].
 func (h *errorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -79,6 +84,7 @@ func (h *errorHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} errors.EntityList "Successfully retrieved list of errors"
+// @Security BearerAuth
 // @Router /v1/errors [get].
 func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
@@ -144,6 +150,7 @@ func (h *errorHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Param projectId query string true "Project ID"
 // @Param groupId query string false "Group ID"
 // @Success 200 {object} errors.Stats "Successfully retrieved stats of errors"
+// @Security BearerAuth
 // @Router /v1/errors/stats [get].
 func (h *errorHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
@@ -213,6 +220,7 @@ func (h *errorHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 404 {object} string "Error entry not found"
 // @Failure 500 {object} string "Internal server error"
+// @Security BearerAuth
 // @Router /v1/errors/{id} [put].
 func (h *errorHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -251,6 +259,7 @@ func (h *errorHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 204 "No Content"
 // @Failure 400 {object} string "Bad Request - when ID is not provided"
 // @Failure 500 {object} string "Internal Server Error - when something goes wrong"
+// @Security BearerAuth
 // @Router /v1/errors/{id} [delete]
 func (h *errorHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

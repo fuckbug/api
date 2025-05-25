@@ -235,7 +235,7 @@ func (r *repository) Update(ctx context.Context, id string, updated *Log) error 
 	`
 
 	updated.ID = id
-	updated.UpdatedAt = time.Now().UnixMilli()
+	updated.UpdatedAt = time.Now().Unix()
 
 	result, err := r.db.NamedExecContext(ctx, query, updated)
 	if err != nil {

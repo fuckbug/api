@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fuckbug/api/internal/middleware"
 	"github.com/fuckbug/api/internal/modules/project"
 	"github.com/fuckbug/api/pkg/httputils"
-
 	v "github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
@@ -21,6 +21,7 @@ func RegisterProjectHandlers(
 	r *mux.Router,
 	logger Logger,
 	service project.Service,
+	jwtKey []byte,
 ) {
 	h := &projectHandler{
 		logger:   logger,
@@ -28,16 +29,15 @@ func RegisterProjectHandlers(
 		service:  service,
 	}
 
-	v1 := r.PathPrefix("/v1").Subrouter()
+	routerV1 := r.PathPrefix("/v1/projects").Subrouter()
+	routerV1.Use(middleware.Auth(jwtKey))
 
-	router := v1.PathPrefix("/projects").Subrouter()
-
-	router.HandleFunc("", h.Create).Methods(http.MethodPost)
-	router.HandleFunc("", h.GetAll).Methods(http.MethodGet)
-	router.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
-	router.HandleFunc("/{id}/dsn", h.GetDSNByID).Methods(http.MethodGet)
-	router.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
-	router.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
+	routerV1.HandleFunc("", h.Create).Methods(http.MethodPost)
+	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
+	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
+	routerV1.HandleFunc("/{id}/dsn", h.GetDSNByID).Methods(http.MethodGet)
+	routerV1.HandleFunc("/{id}", h.Update).Methods(http.MethodPut)
+	routerV1.HandleFunc("/{id}", h.Delete).Methods(http.MethodDelete)
 }
 
 // GetByID godoc
@@ -48,6 +48,7 @@ func RegisterProjectHandlers(
 // @Produce json
 // @Success 200 {object} project.Entity
 // @Param id path string true "Project ID"
+// @Security BearerAuth
 // @Router /v1/projects/{id} [get].
 func (h *projectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -74,6 +75,7 @@ func (h *projectHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Success 200 {object} string
 // @Param id path string true "Project ID"
+// @Security BearerAuth
 // @Router /v1/projects/{id}/dsn [get].
 func (h *projectHandler) GetDSNByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -108,6 +110,7 @@ func (h *projectHandler) GetDSNByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} project.EntityList "Successfully retrieved list of projects"
+// @Security BearerAuth
 // @Router /v1/projects [get].
 func (h *projectHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
@@ -152,6 +155,7 @@ func (h *projectHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} project.Entity "Successfully created project entry"
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 500 {object} string "Internal server error"
+// @Security BearerAuth
 // @Router /v1/projects [post].
 func (h *projectHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var req project.Create
@@ -186,6 +190,7 @@ func (h *projectHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 404 {object} string "Project entry not found"
 // @Failure 500 {object} string "Internal server error"
+// @Security BearerAuth
 // @Router /v1/projects/{id} [put].
 func (h *projectHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -224,6 +229,7 @@ func (h *projectHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 204 "No Content"
 // @Failure 400 {object} string "Bad Request - when ID is not provided"
 // @Failure 500 {object} string "Internal Server Error - when something goes wrong"
+// @Security BearerAuth
 // @Router /v1/projects/{id} [delete]
 func (h *projectHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

@@ -9,6 +9,7 @@ import (
 	"github.com/fuckbug/api/internal/modules/log"
 	logGroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/fuckbug/api/internal/modules/project"
+	"github.com/fuckbug/api/internal/modules/users"
 	"github.com/fuckbug/api/internal/server/http/handlers"
 	"github.com/gorilla/mux"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -17,11 +18,13 @@ import (
 func NewHandler(
 	logger handlers.Logger,
 	appService app.Service,
+	userService users.Service,
 	logService log.Service,
 	logGroupService logGroup.Service,
 	errorService errors.Service,
 	errorGroupService errorsGroup.Service,
 	projectService project.Service,
+	jwtKey []byte,
 ) http.Handler {
 	r := mux.NewRouter()
 	r.MethodNotAllowedHandler = http.HandlerFunc(methodNotAllowedHandler)
@@ -30,11 +33,12 @@ func NewHandler(
 	r.PathPrefix("/docs").Handler(httpSwagger.WrapHandler)
 
 	handlers.RegisterAppHandlers(r, logger, appService)
-	handlers.RegisterLogHandlers(r, logger, logService)
-	handlers.RegisterLogGroupHandlers(r, logger, logGroupService)
-	handlers.RegisterErrorHandlers(r, logger, errorService)
-	handlers.RegisterErrorGroupHandlers(r, logger, errorGroupService)
-	handlers.RegisterProjectHandlers(r, logger, projectService)
+	handlers.RegisterAuthHandlers(r, logger, userService)
+	handlers.RegisterLogHandlers(r, logger, logService, jwtKey)
+	handlers.RegisterLogGroupHandlers(r, logger, logGroupService, jwtKey)
+	handlers.RegisterErrorHandlers(r, logger, errorService, jwtKey)
+	handlers.RegisterErrorGroupHandlers(r, logger, errorGroupService, jwtKey)
+	handlers.RegisterProjectHandlers(r, logger, projectService, jwtKey)
 
 	return r
 }

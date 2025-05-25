@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fuckbug/api/internal/middleware"
 	errorsGroup "github.com/fuckbug/api/internal/modules/errorsGroup"
 	"github.com/fuckbug/api/pkg/httputils"
 	"github.com/fuckbug/api/pkg/utils"
@@ -21,6 +22,7 @@ func RegisterErrorGroupHandlers(
 	r *mux.Router,
 	logger Logger,
 	service errorsGroup.Service,
+	jwtKey []byte,
 ) {
 	h := &errorGroupHandler{
 		logger:   logger,
@@ -29,6 +31,8 @@ func RegisterErrorGroupHandlers(
 	}
 
 	routerV1 := r.PathPrefix("/v1/error-groups").Subrouter()
+	routerV1.Use(middleware.Auth(jwtKey))
+
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
 }
@@ -41,6 +45,7 @@ func RegisterErrorGroupHandlers(
 // @Produce json
 // @Success 200 {object} errorsgroup.Entity
 // @Param id path string true "Error ID"
+// @Security BearerAuth
 // @Router /v1/error-groups/{id} [get].
 func (h *errorGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -73,6 +78,7 @@ func (h *errorGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} errorsgroup.EntityList "Successfully retrieved list of errors"
+// @Security BearerAuth
 // @Router /v1/error-groups [get].
 func (h *errorGroupHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()

@@ -57,6 +57,7 @@ func (s *service) GetAll(ctx context.Context, params GetAllParams) ([]*Entity, i
 	for _, log := range logs {
 		responses = append(responses, toResponse(log))
 	}
+
 	return responses, total, nil
 }
 

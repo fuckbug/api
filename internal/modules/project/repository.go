@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/fuckbug/api/internal/middleware"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
@@ -40,15 +41,21 @@ func NewRepository(db *sqlx.DB, logger Logger) Repository {
 }
 
 func (r *repository) GetAll(ctx context.Context, params GetAllParams) ([]*Project, error) {
+	userID, ok := middleware.GetUserID(ctx)
+	if !ok {
+		return nil, fmt.Errorf("unauthorized")
+	}
+
 	query := `
         SELECT id, name, public_key, created_at, updated_at, deleted_at
         FROM projects 
-        WHERE 1=1
+        WHERE creator_id = :creator_id AND deleted_at IS NULL
     `
 
 	args := map[string]interface{}{
-		"limit":  params.Limit,
-		"offset": params.Offset,
+		"creator_id": userID,
+		"limit":      params.Limit,
+		"offset":     params.Offset,
 	}
 
 	query += " ORDER BY id " + params.SortOrder
@@ -72,10 +79,26 @@ func (r *repository) GetAll(ctx context.Context, params GetAllParams) ([]*Projec
 }
 
 func (r *repository) Count(ctx context.Context) (int, error) {
-	query := "SELECT COUNT(*) FROM projects WHERE deleted_at IS NULL"
+	userID, ok := middleware.GetUserID(ctx)
+	if !ok {
+		return 0, fmt.Errorf("unauthorized")
+	}
+
+	query := "SELECT COUNT(*) FROM projects WHERE creator_id = :creator_id AND deleted_at IS NULL"
+
+	args := map[string]interface{}{
+		"creator_id": userID,
+	}
+
+	query, namedArgs, err := sqlx.Named(query, args)
+	if err != nil {
+		return 0, fmt.Errorf("failed to prepare named query: %w", err)
+	}
+
+	query = r.db.Rebind(query)
 
 	var count int
-	err := r.db.GetContext(ctx, &count, query)
+	err = r.db.GetContext(ctx, &count, query, namedArgs...)
 	if err != nil {
 		return 0, err
 	}
@@ -85,7 +108,7 @@ func (r *repository) Count(ctx context.Context) (int, error) {
 
 func (r *repository) GetByID(ctx context.Context, id string) (*Project, error) {
 	const query = `SELECT id, name, public_key, created_at, updated_at, deleted_at 
-		FROM projects WHERE id = $1`
+		FROM projects WHERE id = $1 AND deleted_at IS NULL`
 
 	var entity Project
 	err := r.db.GetContext(ctx, &entity, query, id)
@@ -98,21 +121,27 @@ func (r *repository) GetByID(ctx context.Context, id string) (*Project, error) {
 	return &entity, nil
 }
 
-func (r *repository) Create(ctx context.Context, l *Project) error {
-	const query = `INSERT INTO projects 
-		(id, name, public_key, created_at, updated_at, deleted_at)
-		VALUES (:id, :name, :public_key, :created_at, :updated_at, null)`
-
-	if l.ID == "" {
-		l.ID = uuid.New().String()
+func (r *repository) Create(ctx context.Context, p *Project) error {
+	userID, ok := middleware.GetUserID(ctx)
+	if !ok {
+		return fmt.Errorf("unauthorized")
 	}
 
-	now := time.Now().UnixMilli()
-	l.PublicKey = generateRandomKey()
-	l.CreatedAt = now
-	l.UpdatedAt = now
+	const query = `INSERT INTO projects 
+		(id, creator_id, name, public_key, created_at, updated_at, deleted_at)
+		VALUES (:id, :creator_id, :name, :public_key, :created_at, :updated_at, null)`
 
-	_, err := r.db.NamedExecContext(ctx, query, l)
+	if p.ID == "" {
+		p.ID = uuid.New().String()
+	}
+
+	now := time.Now().Unix()
+	p.CreatorID = userID
+	p.PublicKey = generateRandomKey()
+	p.CreatedAt = now
+	p.UpdatedAt = now
+
+	_, err := r.db.NamedExecContext(ctx, query, p)
 	if err != nil {
 		return fmt.Errorf("failed to create project: %w", err)
 	}
@@ -126,7 +155,7 @@ func (r *repository) Update(ctx context.Context, id string, updated *Project) er
 		WHERE id = :id`
 
 	updated.ID = id
-	updated.UpdatedAt = time.Now().UnixMilli()
+	updated.UpdatedAt = time.Now().Unix()
 
 	result, err := r.db.NamedExecContext(ctx, query, updated)
 	if err != nil {

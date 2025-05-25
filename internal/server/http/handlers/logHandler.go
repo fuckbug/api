@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fuckbug/api/internal/middleware"
 	"github.com/fuckbug/api/internal/modules/log"
 	"github.com/fuckbug/api/pkg/httputils"
 	"github.com/fuckbug/api/pkg/utils"
@@ -17,10 +18,11 @@ type logHandler struct {
 	service  log.Service
 }
 
-func RegisterLogHandlers(
+func RegisterLogHandlers( //nolint:dupl
 	r *mux.Router,
 	logger Logger,
 	service log.Service,
+	jwtKey []byte,
 ) {
 	h := &logHandler{
 		logger:   logger,
@@ -31,6 +33,8 @@ func RegisterLogHandlers(
 	r.HandleFunc("/ingest/{projectID}:{key}/logs", h.Create).Methods(http.MethodPost)
 
 	routerV1 := r.PathPrefix("/v1/logs").Subrouter()
+	routerV1.Use(middleware.Auth(jwtKey))
+
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	routerV1.HandleFunc("/stats", h.GetStats).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
@@ -46,6 +50,7 @@ func RegisterLogHandlers(
 // @Produce json
 // @Success 200 {object} log.Entity
 // @Param id path string true "Log ID"
+// @Security BearerAuth
 // @Router /v1/logs/{id} [get].
 func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -80,6 +85,7 @@ func (h *logHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} log.EntityList "Successfully retrieved list of logs"
+// @Security BearerAuth
 // @Router /v1/logs [get].
 func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
@@ -147,6 +153,7 @@ func (h *logHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Param projectId query string true "Project ID"
 // @Param groupId query string false "Group ID"
 // @Success 200 {object} log.Stats "Successfully retrieved stats of logs"
+// @Security BearerAuth
 // @Router /v1/logs/stats [get].
 func (h *logHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
@@ -216,6 +223,7 @@ func (h *logHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} string "Invalid input data"
 // @Failure 404 {object} string "Log entry not found"
 // @Failure 500 {object} string "Internal server error"
+// @Security BearerAuth
 // @Router /v1/logs/{id} [put].
 func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -254,6 +262,7 @@ func (h *logHandler) Update(w http.ResponseWriter, r *http.Request) {
 // @Success 204 "No Content"
 // @Failure 400 {object} string "Bad Request - when ID is not provided"
 // @Failure 500 {object} string "Internal Server Error - when something goes wrong"
+// @Security BearerAuth
 // @Router /v1/logs/{id} [delete]
 func (h *logHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)

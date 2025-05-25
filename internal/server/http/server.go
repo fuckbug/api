@@ -13,6 +13,7 @@ import (
 	"github.com/fuckbug/api/internal/modules/log"
 	logGroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/fuckbug/api/internal/modules/project"
+	"github.com/fuckbug/api/internal/modules/users"
 	"github.com/fuckbug/api/internal/server/http/handlers"
 )
 
@@ -29,6 +30,7 @@ const (
 func New(
 	logger handlers.Logger,
 	appService app.Service,
+	userService users.Service,
 	logService log.Service,
 	logGroupService logGroup.Service,
 	errorService errors.Service,
@@ -36,15 +38,18 @@ func New(
 	projectService project.Service,
 	host string,
 	port int,
+	jwtKey []byte,
 ) *Server {
 	handler := NewHandler(
 		logger,
 		appService,
+		userService,
 		logService,
 		logGroupService,
 		errorService,
 		errorGroupService,
 		projectService,
+		jwtKey,
 	)
 
 	servers := &http.Server{

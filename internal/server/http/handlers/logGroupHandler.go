@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/fuckbug/api/internal/middleware"
 	logGroup "github.com/fuckbug/api/internal/modules/logGroup"
 	"github.com/fuckbug/api/pkg/httputils"
 	"github.com/fuckbug/api/pkg/utils"
@@ -21,6 +22,7 @@ func RegisterLogGroupHandlers(
 	r *mux.Router,
 	logger Logger,
 	service logGroup.Service,
+	jwtKey []byte,
 ) {
 	h := &logGroupHandler{
 		logger:   logger,
@@ -29,6 +31,8 @@ func RegisterLogGroupHandlers(
 	}
 
 	routerV1 := r.PathPrefix("/v1/log-groups").Subrouter()
+	routerV1.Use(middleware.Auth(jwtKey))
+
 	routerV1.HandleFunc("", h.GetAll).Methods(http.MethodGet)
 	routerV1.HandleFunc("/{id}", h.GetByID).Methods(http.MethodGet)
 }
@@ -41,6 +45,7 @@ func RegisterLogGroupHandlers(
 // @Produce json
 // @Success 200 {object} loggroup.Entity
 // @Param id path string true "Log ID"
+// @Security BearerAuth
 // @Router /v1/log-groups/{id} [get].
 func (h *logGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
@@ -74,6 +79,7 @@ func (h *logGroupHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Param limit query int false "Items per page" default(50)
 // @Param offset query int false "Offset for pagination" default(0)
 // @Success 200 {object} loggroup.EntityList "Successfully retrieved list of logs"
+// @Security BearerAuth
 // @Router /v1/log-groups [get].
 func (h *logGroupHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
