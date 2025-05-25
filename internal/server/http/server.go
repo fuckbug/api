@@ -53,8 +53,9 @@ func New(
 	)
 
 	servers := &http.Server{
-		Addr:         net.JoinHostPort(host, strconv.Itoa(port)),
-		Handler:      loggingMiddleware(logger, handler),
+		Addr:    net.JoinHostPort(host, strconv.Itoa(port)),
+		Handler: loggingMiddleware(logger, handler),
+		//Handler:      CORS(loggingMiddleware(logger, handler)),
 		ReadTimeout:  defaultReadTimeout,
 		WriteTimeout: defaultWriteTimeout,
 	}

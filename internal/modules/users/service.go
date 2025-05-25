@@ -59,8 +59,12 @@ func (s *service) Signup(ctx context.Context, req *Signup) error {
 
 func (s *service) Login(ctx context.Context, req *Login) (*Token, error) {
 	user, err := s.repo.FindByEmail(ctx, req.Email)
-	if err != nil || !checkPassword(req.Password, user.Password) {
+	if err != nil {
 		return nil, err
+	}
+
+	if user == nil || !checkPassword(req.Password, user.Password) {
+		return nil, errors.New("user not found")
 	}
 
 	accessToken, err := generateJWT(user.ID, s.jwtKey)
