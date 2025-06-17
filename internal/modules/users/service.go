@@ -10,8 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// const tokenTTL = 72 * time.Hour
-const tokenTTL = 5 * time.Minute
+const tokenTTL = 7 * 24 * time.Hour
 
 type Service interface {
 	Signup(ctx context.Context, req *Signup) error
