@@ -136,7 +136,8 @@ func isValidLogLevel(level string) bool {
 
 func generateFingerprint(e *Log) string {
 	data := fmt.Sprintf(
-		"%s:%s",
+		"%s:%s:%s",
+		e.ProjectID,
 		e.Level,
 		e.Message,
 	)
