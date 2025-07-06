@@ -23,11 +23,11 @@ type GetAllParams struct {
 }
 
 type Create struct {
-	Time       int64  `json:"time" validate:"required" example:"1704067200000" format:"int64"`
-	Message    string `json:"message" validate:"required" example:"Division by zero in calculate()"`
-	Stacktrace string `json:"stacktrace" validate:"required" example:"at index.php:15, at main(), at calculate()"`
-	File       string `json:"file" validate:"required" example:"/var/www/app/index.php"`
-	Line       int    `json:"line" validate:"required" example:"15"`
+	Time       int64        `json:"time" validate:"required" example:"1704067200000" format:"int64"`
+	Message    string       `json:"message" validate:"required" example:"Division by zero in calculate()"`
+	Stacktrace *interface{} `json:"stacktrace" validate:"required"`
+	File       string       `json:"file" validate:"required" example:"/var/www/app/index.php"`
+	Line       int          `json:"line" validate:"required" example:"15"`
 	// Context can be any JSON value
 	// @Schema(
 	//   oneOf={
@@ -83,10 +83,10 @@ type Create struct {
 }
 
 type Update struct {
-	Message    string `json:"message" validate:"required" example:"Error message"`
-	Stacktrace string `json:"stacktrace" validate:"required" example:"Stacktrace"`
-	File       string `json:"file" validate:"required" example:"index.php"`
-	Line       int    `json:"line" validate:"required" example:"1"`
+	Message    string       `json:"message" validate:"required" example:"Error message"`
+	Stacktrace *interface{} `json:"stacktrace" validate:"required"`
+	File       string       `json:"file" validate:"required" example:"index.php"`
+	Line       int          `json:"line" validate:"required" example:"1"`
 	// Context can be any JSON value
 	// @Schema(
 	//   oneOf={
@@ -103,11 +103,11 @@ type Update struct {
 }
 
 type Entity struct {
-	ID         string `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
-	Message    string `json:"message" validate:"required" example:"Error: Division by zero"`
-	Stacktrace string `json:"stacktrace" validate:"required" example:"at index.php:15, at main()"`
-	File       string `json:"file" validate:"required" example:"/var/www/index.php"`
-	Line       int    `json:"line" validate:"required" example:"15"`
+	ID         string       `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
+	Message    string       `json:"message" validate:"required" example:"Error: Division by zero"`
+	Stacktrace *interface{} `json:"stacktrace" validate:"required"`
+	File       string       `json:"file" validate:"required" example:"/var/www/index.php"`
+	Line       int          `json:"line" validate:"required" example:"15"`
 	// Context can be any JSON value
 	// @Schema(
 	//   oneOf={

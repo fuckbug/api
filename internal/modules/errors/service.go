@@ -68,6 +68,11 @@ func (s *service) GetStats(ctx context.Context, projectID string, fingerprint st
 }
 
 func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
+	stacktrace, err := stacktraceToString(req.Stacktrace)
+	if err != nil {
+		return nil, err
+	}
+
 	contextStr, err := contextToStringPtr(req.Context)
 	if err != nil {
 		return nil, err
@@ -112,7 +117,7 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		ID:          uuid.New().String(),
 		ProjectID:   req.ProjectID,
 		Message:     req.Message,
-		Stacktrace:  req.Stacktrace,
+		Stacktrace:  stacktrace,
 		File:        req.File,
 		Line:        req.Line,
 		Context:     contextStr,
@@ -147,9 +152,11 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Message != "" {
 		entity.Message = req.Message
 	}
-	if req.Stacktrace != "" {
-		entity.Stacktrace = req.Stacktrace
+	stacktrace, err := stacktraceToString(req.Stacktrace)
+	if err != nil {
+		return nil, err
 	}
+	entity.Stacktrace = stacktrace
 	if req.File != "" {
 		entity.File = req.File
 	}
@@ -192,15 +199,18 @@ func generateFingerprint(e *Error) string {
 
 func toResponse(e *Error) *Entity {
 	response := &Entity{
-		ID:         e.ID,
-		Message:    e.Message,
-		Stacktrace: e.Stacktrace,
-		File:       e.File,
-		Line:       e.Line,
-		IP:         e.IP,
-		URL:        e.URL,
-		Method:     e.Method,
-		Time:       e.Time,
+		ID:      e.ID,
+		Message: e.Message,
+		File:    e.File,
+		Line:    e.Line,
+		IP:      e.IP,
+		URL:     e.URL,
+		Method:  e.Method,
+		Time:    e.Time,
+	}
+
+	if err := parseJSONField(&e.Stacktrace, &response.Stacktrace); err != nil {
+		*response.Stacktrace = e.Stacktrace
 	}
 
 	if err := parseJSONField(e.Context, &response.Context); err != nil {
@@ -270,6 +280,14 @@ func contextToStringPtr(context *interface{}) (*string, error) {
 		return &str, nil
 	}
 	return nil, nil
+}
+
+func stacktraceToString(stacktrace interface{}) (string, error) {
+	jsonData, err := json.Marshal(stacktrace)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal context: %w", err)
+	}
+	return string(jsonData), nil
 }
 
 func mapToStringPtr(m *map[string]interface{}) (*string, error) {
