@@ -191,8 +191,6 @@ func generateFingerprint(e *Error) string {
 }
 
 func toResponse(e *Error) *Entity {
-	var contextValue interface{} = e.Context
-
 	response := &Entity{
 		ID:         e.ID,
 		Message:    e.Message,
@@ -203,7 +201,10 @@ func toResponse(e *Error) *Entity {
 		URL:        e.URL,
 		Method:     e.Method,
 		Time:       e.Time,
-		Context:    &contextValue,
+	}
+
+	if err := parseJSONField(e.Context, &response.Context); err != nil {
+		*response.Context = e.Context
 	}
 
 	if err := parseJSONField(e.Headers, &response.Headers); err != nil {

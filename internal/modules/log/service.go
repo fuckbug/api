@@ -155,15 +155,25 @@ func generateFingerprint(e *Log) string {
 }
 
 func toResponse(l *Log) *Entity {
-	var contextValue interface{} = l.Context
-
-	return &Entity{
+	response := &Entity{
 		ID:      l.ID,
 		Level:   string(l.Level),
 		Message: l.Message,
-		Context: &contextValue,
 		Time:    l.Time,
 	}
+
+	if err := parseJSONField(l.Context, &response.Context); err != nil {
+		*response.Context = l.Context
+	}
+
+	return response
+}
+
+func parseJSONField(src *string, dest interface{}) error {
+	if src == nil || *src == "" {
+		return nil
+	}
+	return json.Unmarshal([]byte(*src), dest)
 }
 
 func contextToStringPtr(context *interface{}) (*string, error) {
