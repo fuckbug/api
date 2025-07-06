@@ -68,7 +68,42 @@ func (s *service) GetStats(ctx context.Context, projectID string, fingerprint st
 }
 
 func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
-	contextStr, err := contextToStr(req.Context)
+	contextStr, err := contextToStringPtr(req.Context)
+	if err != nil {
+		return nil, err
+	}
+
+	headers, err := mapToStringPtr(req.Headers)
+	if err != nil {
+		return nil, err
+	}
+
+	queryParams, err := mapToStringPtr(req.QueryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	bodyParams, err := mapToStringPtr(req.BodyParams)
+	if err != nil {
+		return nil, err
+	}
+
+	cookies, err := mapToStringPtr(req.Cookies)
+	if err != nil {
+		return nil, err
+	}
+
+	session, err := mapToStringPtr(req.Session)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := mapToStringPtr(req.Files)
+	if err != nil {
+		return nil, err
+	}
+
+	env, err := mapToStringPtr(req.Env)
 	if err != nil {
 		return nil, err
 	}
@@ -84,13 +119,13 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		IP:          req.IP,
 		URL:         req.URL,
 		Method:      req.Method,
-		Headers:     req.Headers,
-		QueryParams: req.QueryParams,
-		BodyParams:  req.BodyParams,
-		Cookies:     req.Cookies,
-		Session:     req.Session,
-		Files:       req.Files,
-		Env:         req.Env,
+		Headers:     headers,
+		QueryParams: queryParams,
+		BodyParams:  bodyParams,
+		Cookies:     cookies,
+		Session:     session,
+		Files:       files,
+		Env:         env,
 		Time:        req.Time,
 	}
 
@@ -121,7 +156,7 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Line != 0 {
 		entity.Line = req.Line
 	}
-	contextStr, err := contextToStr(req.Context)
+	contextStr, err := contextToStringPtr(req.Context)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +258,7 @@ func parseJSONField(src *string, dest interface{}) error {
 	return json.Unmarshal([]byte(*src), dest)
 }
 
-func contextToStr(context *interface{}) (*string, error) {
+func contextToStringPtr(context *interface{}) (*string, error) {
 	if context != nil {
 		jsonData, err := json.Marshal(*context)
 		if err != nil {
@@ -234,4 +269,18 @@ func contextToStr(context *interface{}) (*string, error) {
 		return &str, nil
 	}
 	return nil, nil
+}
+
+func mapToStringPtr(m *map[string]interface{}) (*string, error) {
+	if m == nil {
+		return nil, nil
+	}
+
+	jsonBytes, err := json.Marshal(*m)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal map to JSON: %w", err)
+	}
+
+	result := string(jsonBytes)
+	return &result, nil
 }

@@ -40,18 +40,46 @@ type Create struct {
 	//   },
 	//   example={"key":"value"}
 	// )
-	Context     *interface{} `json:"context"`
-	IP          *string      `json:"ip,omitempty" example:"192.168.1.1"`
-	URL         *string      `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
-	Method      *string      `json:"method,omitempty" example:"POST"`
-	Headers     *string      `json:"headers,omitempty" example:"{\"Content-Type\": \"application/json\", \"Authorization\": \"Bearer token\"}"`
-	QueryParams *string      `json:"queryParams,omitempty" example:"{\"page\": 1, \"limit\": 10}"`
-	BodyParams  *string      `json:"bodyParams,omitempty" example:"{\"a\": 5, \"b\": 0}"`
-	Cookies     *string      `json:"cookies,omitempty" example:"{\"sessionId\": \"abc123\", \"theme\": \"dark\"}"`
-	Session     *string      `json:"session,omitempty" example:"{\"userId\": 123, \"role\": \"admin\"}"`
-	Files       *string      `json:"files,omitempty" example:"{\"avatar\": \"avatar.jpg\", \"size\": 1024}"`
-	Env         *string      `json:"env,omitempty" example:"{\"APP_ENV\": \"production\", \"DB_HOST\": \"db.example.com\"}"`
-	ProjectID   string       `json:"-"`
+	Context *interface{} `json:"context"`
+	IP      *string      `json:"ip,omitempty" example:"192.168.1.1"`
+	URL     *string      `json:"url,omitempty" example:"https://example.com/api/v1/calculate"`
+	Method  *string      `json:"method,omitempty" example:"POST"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"Content-Type": "application/json", "Authorization": "Bearer token"}`
+	// )
+	Headers *map[string]interface{} `json:"headers,omitempty"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"page": 1, "limit": 10}`
+	// )
+	QueryParams *map[string]interface{} `json:"queryParams,omitempty"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"a": 5, "b": 0}`
+	// )
+	BodyParams *map[string]interface{} `json:"bodyParams,omitempty"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"sessionId": "abc123", "theme": "dark"}`
+	// )
+	Cookies *map[string]interface{} `json:"cookies,omitempty"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"userId": 123, "role": "admin"}`
+	// )
+	Session *map[string]interface{} `json:"session,omitempty"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"avatar": "avatar.jpg", "size": 1024}`
+	// )
+	Files *map[string]interface{} `json:"files,omitempty"`
+	// @Schema(
+	//   type = "object",
+	//   example = `{"APP_ENV": "production", "DB_HOST": "db.example.com"}`
+	// )
+	Env       *map[string]interface{} `json:"env,omitempty"`
+	ProjectID string                  `json:"-"`
 }
 
 type Update struct {

@@ -75,7 +75,7 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		return nil, ErrInvalidLogLevel
 	}
 
-	contextStr, err := contextToStr(req.Context)
+	contextStr, err := contextToStringPtr(req.Context)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 		log.Message = req.Message
 	}
 
-	contextStr, err := contextToStr(req.Context)
+	contextStr, err := contextToStringPtr(req.Context)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func toResponse(l *Log) *Entity {
 	}
 }
 
-func contextToStr(context *interface{}) (*string, error) {
+func contextToStringPtr(context *interface{}) (*string, error) {
 	if context != nil {
 		jsonData, err := json.Marshal(*context)
 		if err != nil {
