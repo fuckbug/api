@@ -24,24 +24,60 @@ type GetAllParams struct {
 }
 
 type Create struct {
-	Time      int64        `json:"time" validate:"required" example:"1704067200000" format:"int64"`
-	Level     string       `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR"`
-	Message   string       `json:"message" validate:"required" example:"first log message"`
-	Context   *interface{} `json:"context" example:"message context"`
+	Time    int64  `json:"time" validate:"required" example:"1704067200000" format:"int64"`
+	Level   string `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR"`
+	Message string `json:"message" validate:"required" example:"first log message"`
+	// Context can be any JSON value
+	// @Schema(
+	//   oneOf={
+	//     string,
+	//     object,
+	//     array,
+	//     number,
+	//     boolean,
+	//     null
+	//   },
+	//   example={"key":"value"}
+	// )
+	Context   *interface{} `json:"context"`
 	ProjectID string       `json:"-"`
 }
 
 type Update struct {
-	Level   string       `json:"level" validate:"omitempty,oneof=DEBUG INFO WARN ERROR"`
-	Message string       `json:"message" validate:"omitempty" example:"updated log message"`
-	Context *interface{} `json:"context" example:"message context"`
+	Level   string `json:"level" validate:"omitempty,oneof=DEBUG INFO WARN ERROR"`
+	Message string `json:"message" validate:"omitempty" example:"updated log message"`
+	// Context can be any JSON value
+	// @Schema(
+	//   oneOf={
+	//     string,
+	//     object,
+	//     array,
+	//     number,
+	//     boolean,
+	//     null
+	//   },
+	//   example={"key":"value"}
+	// )
+	Context *interface{} `json:"context"`
 }
 
 type Entity struct {
-	ID      string       `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
-	Level   string       `json:"level" example:"INFO"`
-	Message string       `json:"message" example:"first log message"`
-	Context *interface{} `json:"context" example:"{\"key\": \"value\"}"`
+	ID      string `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
+	Level   string `json:"level" example:"INFO"`
+	Message string `json:"message" example:"first log message"`
+	// Context can be any JSON value
+	// @Schema(
+	//   oneOf={
+	//     string,
+	//     object,
+	//     array,
+	//     number,
+	//     boolean,
+	//     null
+	//   },
+	//   example={"key":"value"}
+	// )
+	Context *interface{} `json:"context"`
 	Time    int64        `json:"time" example:"1704067200000"`
 }
 
