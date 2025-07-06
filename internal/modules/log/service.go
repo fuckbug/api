@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -74,12 +75,17 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		return nil, ErrInvalidLogLevel
 	}
 
+	contextStr, err := contextToStr(req.Context)
+	if err != nil {
+		return nil, err
+	}
+
 	log := &Log{
 		ID:        uuid.New().String(),
 		ProjectID: req.ProjectID,
 		Level:     Level(req.Level),
 		Message:   req.Message,
-		Context:   req.Context,
+		Context:   contextStr,
 		Time:      req.Time,
 	}
 
@@ -107,7 +113,12 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Message != "" {
 		log.Message = req.Message
 	}
-	log.Context = req.Context
+
+	contextStr, err := contextToStr(req.Context)
+	if err != nil {
+		return nil, err
+	}
+	log.Context = contextStr
 
 	log.Fingerprint = generateFingerprint(log)
 
@@ -144,11 +155,26 @@ func generateFingerprint(e *Log) string {
 }
 
 func toResponse(l *Log) *Entity {
+	var contextValue interface{} = l.Context
+
 	return &Entity{
 		ID:      l.ID,
 		Level:   string(l.Level),
 		Message: l.Message,
-		Context: l.Context,
+		Context: &contextValue,
 		Time:    l.Time,
 	}
+}
+
+func contextToStr(context *interface{}) (*string, error) {
+	if context != nil {
+		jsonData, err := json.Marshal(*context)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal context: %w", err)
+		}
+
+		str := string(jsonData)
+		return &str, nil
+	}
+	return nil, nil
 }

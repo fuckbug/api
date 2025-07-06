@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/fuckbug/api/pkg/utils"
 	"github.com/google/uuid"
 )
 
@@ -69,6 +68,11 @@ func (s *service) GetStats(ctx context.Context, projectID string, fingerprint st
 }
 
 func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
+	contextStr, err := contextToStr(req.Context)
+	if err != nil {
+		return nil, err
+	}
+
 	entity := &Error{
 		ID:          uuid.New().String(),
 		ProjectID:   req.ProjectID,
@@ -76,7 +80,7 @@ func (s *service) Create(ctx context.Context, req *Create) (*Entity, error) {
 		Stacktrace:  req.Stacktrace,
 		File:        req.File,
 		Line:        req.Line,
-		Context:     req.Context,
+		Context:     contextStr,
 		IP:          req.IP,
 		URL:         req.URL,
 		Method:      req.Method,
@@ -117,9 +121,11 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Line != 0 {
 		entity.Line = req.Line
 	}
-	if utils.DerefString(req.Context) != "" {
-		entity.Context = req.Context
+	contextStr, err := contextToStr(req.Context)
+	if err != nil {
+		return nil, err
 	}
+	entity.Context = contextStr
 
 	entity.Fingerprint = generateFingerprint(entity)
 
@@ -150,6 +156,8 @@ func generateFingerprint(e *Error) string {
 }
 
 func toResponse(e *Error) *Entity {
+	var contextValue interface{} = e.Context
+
 	response := &Entity{
 		ID:         e.ID,
 		Message:    e.Message,
@@ -160,12 +168,7 @@ func toResponse(e *Error) *Entity {
 		URL:        e.URL,
 		Method:     e.Method,
 		Time:       e.Time,
-	}
-
-	if err := parseJSONField(e.Context, &response.Context); err != nil {
-		*response.Context = map[string]interface{}{
-			"Context": e.Context,
-		}
+		Context:    &contextValue,
 	}
 
 	if err := parseJSONField(e.Headers, &response.Headers); err != nil {
@@ -218,4 +221,17 @@ func parseJSONField(src *string, dest interface{}) error {
 		return nil
 	}
 	return json.Unmarshal([]byte(*src), dest)
+}
+
+func contextToStr(context *interface{}) (*string, error) {
+	if context != nil {
+		jsonData, err := json.Marshal(*context)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal context: %w", err)
+		}
+
+		str := string(jsonData)
+		return &str, nil
+	}
+	return nil, nil
 }
