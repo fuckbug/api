@@ -41,7 +41,7 @@ type Entity struct {
 	ID      string       `json:"id" example:"a08929b5-d4f0-4ceb-9cfe-bb4fc05b030c"`
 	Level   string       `json:"level" example:"INFO"`
 	Message string       `json:"message" example:"first log message"`
-	Context *interface{} `json:"context" example:"message context"`
+	Context *interface{} `json:"context" example:"{\"key\": \"value\"}"`
 	Time    int64        `json:"time" example:"1704067200000"`
 }
 
