@@ -208,6 +208,10 @@ func (r *repository) Create(ctx context.Context, l *Log) error {
 	l.CreatedAt = now
 	l.UpdatedAt = now
 
+	if err = l.PrepareForDB(); err != nil {
+		return fmt.Errorf("failed to prepare log: %w", err)
+	}
+
 	_, err = tx.NamedExecContext(ctx, query, l)
 	if err != nil {
 		return fmt.Errorf("failed to create log: %w", err)
@@ -236,6 +240,10 @@ func (r *repository) Update(ctx context.Context, id string, updated *Log) error 
 
 	updated.ID = id
 	updated.UpdatedAt = time.Now().Unix()
+
+	if err := updated.PrepareForDB(); err != nil {
+		return fmt.Errorf("failed to prepare log: %w", err)
+	}
 
 	result, err := r.db.NamedExecContext(ctx, query, updated)
 	if err != nil {

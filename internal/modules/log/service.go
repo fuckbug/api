@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/fuckbug/api/pkg/utils"
 	"github.com/google/uuid"
 )
 
@@ -108,9 +107,7 @@ func (s *service) Update(ctx context.Context, id string, req *Update) (*Entity, 
 	if req.Message != "" {
 		log.Message = req.Message
 	}
-	if utils.DerefString(req.Context) != "" {
-		log.Context = req.Context
-	}
+	log.Context = req.Context
 
 	log.Fingerprint = generateFingerprint(log)
 
