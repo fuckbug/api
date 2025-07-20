@@ -25,7 +25,7 @@ type GetAllParams struct {
 
 type Create struct {
 	Time    int64  `json:"time" validate:"required" example:"1704067200000" format:"int64"`
-	Level   string `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR"`
+	Level   string `json:"level" validate:"required,oneof=DEBUG INFO WARN ERROR FATAL"`
 	Message string `json:"message" validate:"required" example:"first log message"`
 	// Context can be any JSON value
 	// @Schema(
@@ -44,7 +44,7 @@ type Create struct {
 }
 
 type Update struct {
-	Level   string `json:"level" validate:"omitempty,oneof=DEBUG INFO WARN ERROR"`
+	Level   string `json:"level" validate:"omitempty,oneof=DEBUG INFO WARN ERROR FATAL"`
 	Message string `json:"message" validate:"omitempty" example:"updated log message"`
 	// Context can be any JSON value
 	// @Schema(
