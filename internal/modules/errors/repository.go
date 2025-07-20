@@ -312,7 +312,7 @@ func applyFilters(baseQuery string, params FilterParams, args map[string]interfa
 	}
 
 	if params.Search != "" {
-		query += " AND message LIKE :search"
+		query += " AND message ILIKE :search"
 		args["search"] = "%" + params.Search + "%"
 	}
 

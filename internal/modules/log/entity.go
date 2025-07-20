@@ -7,6 +7,7 @@ const (
 	LevelInfo  Level = "INFO"
 	LevelWarn  Level = "WARN"
 	LevelError Level = "ERROR"
+	LevelFatal Level = "FATAL"
 )
 
 type Log struct {

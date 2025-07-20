@@ -135,7 +135,7 @@ func (s *service) Delete(ctx context.Context, id string) error {
 
 func isValidLogLevel(level string) bool {
 	switch Level(level) {
-	case LevelInfo, LevelWarn, LevelError, LevelDebug:
+	case LevelFatal, LevelInfo, LevelWarn, LevelError, LevelDebug:
 		return true
 	default:
 		return false
