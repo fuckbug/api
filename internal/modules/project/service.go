@@ -43,7 +43,7 @@ func (s *service) GetDSNByID(ctx context.Context, id string) (string, error) {
 		return "", err
 	}
 
-	dsn := "https://" + s.domain + "/ingest/" + project.ID + ":" + project.PublicKey
+	dsn := "https://" + s.domain + "/api/ingest/" + project.ID + ":" + project.PublicKey
 
 	return dsn, nil
 }
